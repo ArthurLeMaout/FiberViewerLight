@@ -43,7 +43,7 @@ class FiberViewerLightGUI: public QWidget
 	Q_OBJECT
 			
 	public:
-		FiberViewerLightGUI(QWidget* parent=0);
+		FiberViewerLightGUI(std::string input="", std::string output="", QWidget* parent=0);
 		void InitWidgets();
 		void InitRedMap(vtkPolyData* PolyData);
 		vtkSmartPointer<vtkPolyData> LoadVTK(std::string FileName);

@@ -9,7 +9,7 @@
  *Constructor: Initialize widgets and renderer and connect slots and signals
  ********************************************************************************/
 
-FiberViewerLightGUI::FiberViewerLightGUI(QWidget* parent):QWidget(parent)
+FiberViewerLightGUI::FiberViewerLightGUI(std::string input, std::string output, QWidget* parent):QWidget(parent)
 {
 	this->setMouseTracking(true);
 	
@@ -32,6 +32,10 @@ FiberViewerLightGUI::FiberViewerLightGUI(QWidget* parent):QWidget(parent)
 	connect(m_PB_SaveVTK, SIGNAL(clicked()), this, SLOT(SaveVTK()));
 	connect(m_PB_Plane, SIGNAL(clicked()), this, SLOT(OpenPlanSetting()));
 	connect(m_DistributionGUI, SIGNAL(Progress(int)), m_ProgressBar, SLOT(setValue(int)));
+	
+	m_LE_VTKInput->setText(input.c_str());
+	m_LE_VTKOutput->setText(output.c_str());
+	EnterVTKInput();	
 }
 
 
