@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+	<category>FiberViewerLight</category>
+	<title>FiberViewer Light</title>
+	<description>
+		Light Version of FiberViewer. Used for Fiber Clustering thanks to methods such as Length, Gravity, Hausdorff, or Mean Distribution and Normalized Cut.
+	</description>
+	<contributor>Jean-Baptiste Berger, Clement Vachet, Martin Styner</contributor>
+	
+	<parameters>
+		<string>
+			<name>input</name>
+			<longflag>input</longflag>
+			<flag>i</flag>
+			<description>VTK Input File</description>
+			<label>input</label>
+		</string>
+		
+		<string>
+			<name>output</name>
+			<longflag>output</longflag>
+			<flag>o</flag>
+			<description>VTK Output File</description>
+			<label>output</label>
+		</string>
+	</parameters>	
+</executable>
