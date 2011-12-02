@@ -1,6 +1,7 @@
 #ifndef FIBERVIEWERLIGHTGUI_H
 #define FIBERVIEWERLIGHTGUI_H
 
+#include <sstream>
 
 #include <QLineEdit>
 #include <QPushButton>
@@ -90,6 +91,7 @@ class FiberViewerLightGUI: public QWidget
 		QPushButton* m_PB_SaveVTK;
 		QPushButton* m_PB_Plane;
 		QProgressBar* m_ProgressBar;
+		QLabel* m_L_NbFiber;
 		std::string m_VtkFileName;
 		
 		FVLengthGUI* m_LengthGUI;
