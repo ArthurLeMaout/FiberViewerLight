@@ -34,6 +34,8 @@ FiberViewerLightGUI::FiberViewerLightGUI(std::string input, std::string output, 
 	connect(m_DistributionGUI, SIGNAL(Progress(int)), m_ProgressBar, SLOT(setValue(int)));
 	connect(m_LengthGUI, SIGNAL(Progress(int)), m_ProgressBar, SLOT(setValue(int)));
 	connect(m_NormCutGUI, SIGNAL(Progress(int)), m_ProgressBar, SLOT(setValue(int)));
+	connect(m_S_PercentageDisplayed, SIGNAL(valueChanged(int)), this, SLOT(UpdatePercentage(int)));
+	connect(m_Display, SIGNAL(NbFibersChanged(int)), this, SLOT(UpdateNbFibers(int)));
 	
 	m_LE_VTKInput->setText(input.c_str());
 	m_LE_VTKOutput->setText(output.c_str());
@@ -107,6 +109,12 @@ void FiberViewerLightGUI::InitWidgets()
 	m_PB_Plane=new QPushButton("Plane Option", this);
 	m_PB_Plane->setEnabled(false);
 	m_L_NbFiber=new QLabel("No Fiber Loaded",this);
+	m_S_PercentageDisplayed=new QSlider(Qt::Horizontal, this);
+	m_S_PercentageDisplayed->setMinimumWidth(200);
+	m_S_PercentageDisplayed->setRange(1,10);
+	m_S_PercentageDisplayed->setEnabled(false);
+	m_L_PercentageDisplayed=new QLabel("", this);
+	m_L_NbFiberDisplayed=new QLabel("", this);
 	
 	QFrame* F_HLine1=new QFrame;
 	F_HLine1->setFrameShadow(QFrame::Plain);
@@ -122,6 +130,7 @@ void FiberViewerLightGUI::InitWidgets()
 	QVBoxLayout* VL_ActionPanel=new QVBoxLayout;
 	QGridLayout* GL_FiberIO=new QGridLayout;
 	QHBoxLayout* HL_Navigation=new QHBoxLayout;
+	QGridLayout* GL_FiberInfo=new QGridLayout;
 	
 	//Layout settings
 	VL_ActionPanel->addWidget(m_L_IO);
@@ -162,14 +171,57 @@ void FiberViewerLightGUI::InitWidgets()
 	GL_MainLayout->addWidget(m_GB_NormCutPanel,0,4,Qt::AlignTop);
 	
 	GL_MainLayout->addWidget(m_PlanSetting,1,0,1,5);
-	GL_MainLayout->addWidget(m_L_NbFiber,2,0,1,5);
-	GL_MainLayout->addWidget(m_PB_Plane,2,5);
-	GL_MainLayout->addWidget(m_Display,0,5,2,3);
+	GL_MainLayout->setRowStretch(1,1);
+	
+	GL_FiberInfo->addWidget(m_L_NbFiber,0,0,Qt::AlignLeft);
+	GL_FiberInfo->addWidget(m_L_NbFiberDisplayed,0,1,1,4,Qt::AlignLeft);
+	GL_FiberInfo->addWidget(m_L_PercentageDisplayed,1,0,Qt::AlignRight);
+	GL_FiberInfo->addWidget(m_S_PercentageDisplayed,1,1,1,4,Qt::AlignLeft);
+	GL_MainLayout->addLayout(GL_FiberInfo,2,0,2,5);
+	GL_MainLayout->addWidget(m_PB_Plane,3,5);
+	GL_MainLayout->addWidget(m_Display,0,5,3,3);
 	GL_MainLayout->setColumnStretch(6,1);
 
 	setLayout(GL_MainLayout);
 }
 
+int FiberViewerLightGUI::GetNbFiberDisplayed()
+{
+	return atoi(m_L_NbFiberDisplayed->text().toStdString().c_str());
+}
+
+void FiberViewerLightGUI::UpdatePercentage(int value)
+{
+	std::ostringstream oss;
+	QString Percentage;
+	oss<<value*10;
+	Percentage=oss.str().c_str();
+	m_L_PercentageDisplayed->setText(Percentage+"%");
+	UpdateDisplayedLabel();
+// 	UpdateDisplayedFibers();
+}
+
+void FiberViewerLightGUI::UpdateNbFibers(int value)
+{
+	std::ostringstream oss;
+	QString NbFiber;
+	oss<<value;
+	NbFiber=oss.str().c_str();
+	m_L_NbFiber->setText(NbFiber+" fiber(s)");
+	UpdateDisplayedLabel();
+// 	UpdateDisplayedFibers();
+}
+
+void FiberViewerLightGUI::UpdateDisplayedLabel()
+{
+	std::ostringstream oss;
+	QString Displayed;
+	oss<<atoi(m_L_NbFiber->text().toStdString().c_str())*atoi(m_L_PercentageDisplayed->text().toStdString().c_str())/100;
+	Displayed=oss.str().c_str();
+	m_L_NbFiberDisplayed->setText(Displayed+" displayed");
+	m_Display->SetNbFibersDisplayed(atoi(m_L_NbFiberDisplayed->text().toStdString().c_str()));
+	m_Display->UpdateDisplayedFibers();
+}
 /********************************************************************************
  *BrowserVTKInput: Browser for input VTK file
  ********************************************************************************/
@@ -218,6 +270,12 @@ void FiberViewerLightGUI::EnterVTKInput()
 			nbfiber<<PolyData->GetNumberOfCells();
 			QString NbFiber=nbfiber.str().c_str();
 			m_L_NbFiber->setText(NbFiber + " fiber(s)");
+			if(PolyData->GetNumberOfCells()>10000)
+				m_S_PercentageDisplayed->setValue(100000/PolyData->GetNumberOfCells());
+			else
+				m_S_PercentageDisplayed->setValue(10);
+			m_S_PercentageDisplayed->setEnabled(true);
+			m_Display->UpdateDisplayedFibers();
 		}
 	}
 }

@@ -23,9 +23,14 @@
 #include <vtkInteractorStyleSwitch.h>
 #include <vtkImplicitPlaneWidget.h>
 
+#include <time.h>
+#include <algorithm>
+
 
 class FiberDisplay: public QWidget
 {
+	Q_OBJECT
+	
 	public:
 		enum AlphasType{Next,Previous};
 		
@@ -49,6 +54,7 @@ class FiberDisplay: public QWidget
 		void ClearAlphas(AlphasType Type);
 		void PushBackAlpha(std::vector<int> Alpha, AlphasType Type);
 		void PopBackAlpha(AlphasType Type);
+		std::vector<int> GenerateRandomIds(vtkSmartPointer<vtkPolyData> PolyData);
 		void StartRenderer(vtkPolyData* PolyData);
 		void Render();
 		void UpdateCells();
@@ -56,15 +62,23 @@ class FiberDisplay: public QWidget
 		vtkImplicitPlaneWidget* GetPlan();
 		void InitPlan(double Bounds[]);
 		bool IsUnchanged();
+		void UpdateDisplayedFibers();
+		void SetNbFibersDisplayed(int value);
 		
+	signals:
+		void NbFibersChanged(int);
+	
 	private:
 		QVTKInteractor* iren;
 		vtkImplicitPlaneWidget* m_Plane;
 		QVTKWidget* m_VTKW_RenderWin;
 		vtkSmartPointer<vtkPolyData> m_OriginalPolyData;
 		vtkSmartPointer<vtkPolyData> m_ModifiedPolyData;
+		vtkSmartPointer<vtkPolyData> m_DisplayedPolyData;
 		std::vector<std::vector<int> > m_PreviousAlphas;
 		std::vector<std::vector<int> > m_NextAlphas;
+		int m_NbFibersDisplayed;
+// 		std::vector<int> m_DisplayedId;
 };
 
 #endif

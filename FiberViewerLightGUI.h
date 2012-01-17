@@ -49,6 +49,7 @@ class FiberViewerLightGUI: public QWidget
 		void InitRedMap(vtkPolyData* PolyData);
 		vtkSmartPointer<vtkPolyData> LoadVTK(std::string FileName);
 		void SetAtLastAlphas();
+		int GetNbFiberDisplayed();
 		
 	protected slots:
 		void BrowserVTKInput();
@@ -65,6 +66,9 @@ class FiberViewerLightGUI: public QWidget
 		void OpenPlanSetting();
 		void UndoAction();
 		void RedoAction();
+		void UpdatePercentage(int value);
+		void UpdateNbFibers(int value);
+		void UpdateDisplayedLabel();
 		
 	private:
 		QGroupBox* m_GB_ActionPanel;
@@ -91,7 +95,10 @@ class FiberViewerLightGUI: public QWidget
 		QPushButton* m_PB_SaveVTK;
 		QPushButton* m_PB_Plane;
 		QProgressBar* m_ProgressBar;
+		QSlider* m_S_PercentageDisplayed;
+		QLabel* m_L_PercentageDisplayed;
 		QLabel* m_L_NbFiber;
+		QLabel* m_L_NbFiberDisplayed;
 		std::string m_VtkFileName;
 		
 		FVLengthGUI* m_LengthGUI;

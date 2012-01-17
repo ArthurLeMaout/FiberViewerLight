@@ -1,15 +1,17 @@
 #include "FiberDisplay.h"
 #include "FiberViewerLightGUI.h"
 
+
 FiberDisplay::FiberDisplay(QWidget* parent) : QWidget(parent)
 {
 	m_OriginalPolyData=vtkSmartPointer<vtkPolyData>::New();
 	m_ModifiedPolyData=vtkSmartPointer<vtkPolyData>::New();
+	m_DisplayedPolyData=vtkSmartPointer<vtkPolyData>::New();
 	iren=QVTKInteractor::New();
 	m_Plane=vtkImplicitPlaneWidget::New();
 	
 	m_VTKW_RenderWin=new QVTKWidget;
-	m_VTKW_RenderWin->setMinimumSize(500,547);
+	m_VTKW_RenderWin->setMinimumSize(500,571);
 	
 	QGridLayout* MainLayout=new QGridLayout;
 	MainLayout->addWidget(m_VTKW_RenderWin);
@@ -175,6 +177,10 @@ void FiberDisplay::SetLastAlpha(std::vector<int> Alpha, AlphasType Type)
 		m_PreviousAlphas[m_PreviousAlphas.size()-1]=Alpha;	
 }
 
+void FiberDisplay::SetNbFibersDisplayed(int value)
+{
+	m_NbFibersDisplayed=value;
+}
 
 void FiberDisplay::PushBackAlpha(std::vector<int> Alpha, AlphasType Type)
 {
@@ -233,13 +239,30 @@ void FiberDisplay::InitPlaneCoord(double Bounds[])
 	Bounds[4]=MinZ;
 	Bounds[5]=MaxZ;
 }
-		
+
+std::vector<int> FiberDisplay::GenerateRandomIds(vtkSmartPointer<vtkPolyData> PolyData)
+{
+	srand(time(NULL));
+	std::vector<int> RandomIds=std::vector<int>();
+	int Random=rand()%PolyData->GetNumberOfCells();
+	RandomIds.push_back(Random);
+	for(int i=1; i<m_NbFibersDisplayed; i++)
+	{
+		Random=rand()%PolyData->GetNumberOfCells();
+		while(std::find(RandomIds.begin(), RandomIds.end(), Random)!=RandomIds.end())
+			Random++;
+		RandomIds.push_back(Random);
+	}
+	sort(RandomIds.begin(), RandomIds.end());
+	return RandomIds;	
+}
 
 void FiberDisplay::StartRenderer(vtkPolyData* PolyData)
 {
 	//Copy PolyData in Original in case of step back
 	m_OriginalPolyData->DeepCopy(PolyData);
-	m_ModifiedPolyData=PolyData;
+	m_ModifiedPolyData->DeepCopy(PolyData);
+	m_DisplayedPolyData=PolyData;
 	InitAlphas();
 	
 	//Get actual renderer
@@ -253,7 +276,7 @@ void FiberDisplay::StartRenderer(vtkPolyData* PolyData)
 		
 		//Set mapper's input
 		vtkPolyDataMapper* PolyDataMapper=vtkPolyDataMapper::New();
-		PolyDataMapper->SetInput(m_ModifiedPolyData);
+		PolyDataMapper->SetInput(m_DisplayedPolyData);
 		
 		//Set actor's mapper
 		vtkActor* PolyDataActor=vtkActor::New();
@@ -315,7 +338,8 @@ void FiberDisplay::UpdateCells()
 	ModifiedPolyData->SetLines(NewLines);
 	ModifiedPolyData->GetPointData()->SetScalars(NewScalars);
 	m_ModifiedPolyData->DeepCopy(ModifiedPolyData);
-	Render();
+	emit(NbFibersChanged(m_ModifiedPolyData->GetNumberOfCells()));
+	UpdateDisplayedFibers();
 }
 
 vtkImplicitPlaneWidget* FiberDisplay::GetPlan()
@@ -333,4 +357,51 @@ void FiberDisplay::InitPlan(double Bounds[])
 	m_Plane->UpdatePlacement();
 	m_Plane->Off();
 }
+
+void FiberDisplay::UpdateDisplayedFibers()
+{
+	std::vector<int> RandomIds=GenerateRandomIds(m_ModifiedPolyData);
+	int RandCount=0;
+	vtkSmartPointer<vtkPolyData> DisplayedPolyData=vtkSmartPointer<vtkPolyData>::New();
+	vtkFloatArray* NewScalars=vtkFloatArray::New();
+	vtkFloatArray* NewTensors=vtkFloatArray::New();
+	NewTensors->SetNumberOfComponents(9);
+	vtkDataArray* Scalars=m_ModifiedPolyData->GetPointData()->GetScalars();
+	vtkDataArray* Tensors=m_ModifiedPolyData->GetPointData()->GetTensors();
+	vtkPoints* NewPoints=vtkPoints::New();
+	vtkCellArray* NewLines=vtkCellArray::New();
+	vtkPoints* Points=m_ModifiedPolyData->GetPoints();
+	vtkCellArray* Lines=m_ModifiedPolyData->GetLines();
+	vtkIdType* Ids;
+	vtkIdType NumberOfPoints;
+	int NewId=0;
+	Lines->InitTraversal();
 	
+	for(int i=0; Lines->GetNextCell(NumberOfPoints, Ids); i++)
+	{
+		if(RandomIds[RandCount]==i)
+		{
+			RandCount++;
+			vtkPolyLine* NewLine=vtkPolyLine::New();
+			NewLine->GetPointIds()->SetNumberOfIds(NumberOfPoints);
+			for(int j=0; j<NumberOfPoints; j++)
+			{
+				NewPoints->InsertNextPoint(Points->GetPoint(Ids[j]));
+				NewLine->GetPointIds()->SetId(j,NewId);
+				NewId++;
+				NewScalars->InsertNextValue(Scalars->GetComponent(0,Ids[j]));
+				double tensorValue[9];
+				for(int k=0; k<9; k++)
+					tensorValue[k]=Tensors->GetComponent(Ids[j],k);
+				NewTensors->InsertNextTuple(tensorValue);
+			}
+			NewLines->InsertNextCell(NewLine);
+		}
+	}
+	DisplayedPolyData->SetPoints(NewPoints);
+	DisplayedPolyData->GetPointData()->SetTensors(NewTensors);
+	DisplayedPolyData->SetLines(NewLines);
+	DisplayedPolyData->GetPointData()->SetScalars(NewScalars);
+	m_DisplayedPolyData->DeepCopy(DisplayedPolyData);	
+	Render();
+}
