@@ -233,7 +233,7 @@ void FiberViewerLightGUI::BrowserVTKInput()
 	QString filename,type;
 	QFileDialog FileDialog;
 	FileDialog.setViewMode(QFileDialog::Detail);
-	filename = FileDialog.getOpenFileName(this, "Open VTK File", "/", "VTK (*.vtk)",&type);
+	filename = FileDialog.getOpenFileName(this, "Open VTK File", "/", "VTK (*.vtk *.vtp)",&type);
 	if(filename!="")
 	{
 		m_Display->ClearAlphas(FiberDisplay::Previous);
@@ -270,8 +270,11 @@ void FiberViewerLightGUI::EnterVTKInput()
 			nbfiber<<PolyData->GetNumberOfCells();
 			QString NbFiber=nbfiber.str().c_str();
 			m_L_NbFiber->setText(NbFiber + " fiber(s)");
-			if(PolyData->GetNumberOfCells()>10000)
-				m_S_PercentageDisplayed->setValue(100000/PolyData->GetNumberOfCells());
+			if(PolyData->GetNumberOfCells()>20000)
+			{
+				std::cout<<200000/PolyData->GetNumberOfCells()<<std::endl;
+				m_S_PercentageDisplayed->setValue(200000/PolyData->GetNumberOfCells());
+			}
 			else
 				m_S_PercentageDisplayed->setValue(10);
 			m_S_PercentageDisplayed->setEnabled(true);
@@ -305,20 +308,29 @@ vtkSmartPointer<vtkPolyData> FiberViewerLightGUI::LoadVTK(std::string FileName)
 	if(m_VtkFileName!=FileName)
 	{
 		std::cout<<"Reading VTK data..."<<std::endl;
-		vtkSmartPointer<vtkPolyDataReader> reader(vtkPolyDataReader::New());
-		reader->SetFileName(FileName.c_str());
-		m_VtkFileName=FileName;
-		if(reader->IsFilePolyData())
+		vtkSmartPointer<vtkPolyData> PolyData;
+		if (FileName.rfind(".vtk") != std::string::npos)
 		{
-			vtkSmartPointer<vtkPolyData> PolyData;
-			reader->Update();
+			vtkSmartPointer<vtkPolyDataReader> reader = vtkPolyDataReader::New();
+// 			reader->SetFileTypeToBinary();
+			reader->SetFileName(FileName.c_str());
 			PolyData=reader->GetOutput();
-			std::cout<<"VTK File read successfuly. "<<PolyData->GetNumberOfCells()<<" fibers read."<<std::endl;
-			return PolyData;
+			reader->Update();
+		}
+		else if (FileName.rfind(".vtp") != std::string::npos)
+		{
+			vtkSmartPointer<vtkXMLPolyDataReader> reader = vtkXMLPolyDataReader::New();
+			reader->SetFileName(FileName.c_str());
+			PolyData=reader->GetOutput();
+			reader->Update();
 		}
 		else
+		{
 			std::cout<<"Error reading VTK File. Check VTK Format."<<std::endl;
-		return NULL;
+			return NULL;
+		}
+		std::cout<<"VTK File read successfuly. "<<PolyData->GetNumberOfCells()<<" fibers read."<<std::endl;
+		return PolyData;
 	}
 	else
 		return NULL;
@@ -366,10 +378,22 @@ void FiberViewerLightGUI::SaveVTK()
 		vtkSmartPointer<vtkPolyData> FinalPolyData=vtkSmartPointer<vtkPolyData>::New();
 		FinalPolyData->DeepCopy(m_Display->GetModifiedPolyData());
 		FinalPolyData->GetPointData()->SetScalars(0);
-		vtkSmartPointer<vtkPolyDataWriter> writer(vtkPolyDataWriter::New());
-		writer->SetFileName(m_LE_VTKOutput->text().toStdString().c_str());
-		writer->SetInput(FinalPolyData);
-		writer->Update();
+		if (m_LE_VTKOutput->text().toStdString().rfind(".vtk") != std::string::npos)
+		{
+			vtkSmartPointer<vtkPolyDataWriter> fiberwriter = vtkPolyDataWriter::New();
+			fiberwriter->SetFileTypeToBinary();
+			fiberwriter->SetFileName(m_LE_VTKOutput->text().toStdString().c_str());
+			fiberwriter->SetInput(FinalPolyData);
+			fiberwriter->Update();
+		}
+    // XML
+		else if (m_LE_VTKOutput->text().toStdString().rfind(".vtp") != std::string::npos)
+		{
+			vtkSmartPointer<vtkXMLPolyDataWriter> fiberwriter = vtkXMLPolyDataWriter::New();
+			fiberwriter->SetFileName(m_LE_VTKOutput->text().toStdString().c_str());
+			fiberwriter->SetInput(FinalPolyData);
+			fiberwriter->Update();
+		}
 	}
 }
 
