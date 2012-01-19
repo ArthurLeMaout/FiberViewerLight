@@ -14,7 +14,6 @@
 			<flag>i</flag>
 			<description>VTK Input File</description>
 			<label>input</label>
-			<index>1</index>
 			<channel>input</channel>
 		</geometry>
 		
@@ -24,7 +23,6 @@
 			<flag>o</flag>
 			<description>VTK Output File</description>
 			<label>output</label>
-			<index>2</index>
 			<channel>output</channel>
 		</geometry>
 	</parameters>	
