@@ -3,6 +3,10 @@
 #include "vtkFloatArray.h"
 #include "vtkPointData.h"
 #include "vtkPoints.h"
+#include "vtkXMLPolyDataWriter.h"
+#include "vtkPolyDataWriter.h"
+#include "vtkXMLPolyDataReader.h"
+#include "vtkPolyDataReader.h"
 
 
 /********************************************************************************
