@@ -202,7 +202,6 @@ void FiberViewerLightGUI::UpdatePercentage(int value)
 	Percentage=oss.str().c_str();
 	m_L_PercentageDisplayed->setText(Percentage+"%");
 	UpdateDisplayedLabel();
-// 	UpdateDisplayedFibers();
 }
 
 void FiberViewerLightGUI::UpdateNbFibers(int value)
@@ -213,7 +212,6 @@ void FiberViewerLightGUI::UpdateNbFibers(int value)
 	NbFiber=oss.str().c_str();
 	m_L_NbFiber->setText(NbFiber+" fiber(s)");
 	UpdateDisplayedLabel();
-// 	UpdateDisplayedFibers();
 }
 
 void FiberViewerLightGUI::UpdateDisplayedLabel()
@@ -276,13 +274,14 @@ void FiberViewerLightGUI::EnterVTKInput()
 			m_L_NbFiber->setText(NbFiber + " fiber(s)");
 			if(PolyData->GetNumberOfCells()>20000)
 			{
-				std::cout<<200000/PolyData->GetNumberOfCells()<<std::endl;
-				m_S_PercentageDisplayed->setValue(200000/PolyData->GetNumberOfCells());
+				if(m_S_PercentageDisplayed->value()!=200000/PolyData->GetNumberOfCells())
+					m_S_PercentageDisplayed->setValue(200000/PolyData->GetNumberOfCells());
+				else
+					UpdatePercentage(m_S_PercentageDisplayed->value());
 			}
 			else
 				m_S_PercentageDisplayed->setValue(10);
 			m_S_PercentageDisplayed->setEnabled(true);
-			m_Display->UpdateDisplayedFibers();
 		}
 	}
 }
@@ -382,10 +381,12 @@ void FiberViewerLightGUI::SaveVTK()
 		vtkSmartPointer<vtkPolyData> FinalPolyData=vtkSmartPointer<vtkPolyData>::New();
 		FinalPolyData->DeepCopy(m_Display->GetModifiedPolyData());
 		FinalPolyData->GetPointData()->SetScalars(0);
+		FinalPolyData->BuildCells();
+		FinalPolyData->BuildLinks();
 		if (m_LE_VTKOutput->text().toStdString().rfind(".vtk") != std::string::npos)
 		{
 			vtkSmartPointer<vtkPolyDataWriter> fiberwriter = vtkPolyDataWriter::New();
-			fiberwriter->SetFileTypeToBinary();
+// 			fiberwriter->SetFileTypeToBinary();
 			fiberwriter->SetFileName(m_LE_VTKOutput->text().toStdString().c_str());
 			fiberwriter->SetInput(FinalPolyData);
 			fiberwriter->Update();

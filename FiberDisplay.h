@@ -38,28 +38,28 @@ class FiberDisplay: public QWidget
 		void InitRenderer();
 		void InitAlphas();
 		
-		vtkPolyData* GetOriginalPolyData();
-		vtkPolyData* GetModifiedPolyData();
-		vtkRenderer* GetRenderer();
-		vtkActor* GetActor();
+		vtkSmartPointer<vtkPolyData> GetOriginalPolyData();
+		vtkSmartPointer<vtkPolyData> GetModifiedPolyData();
+		vtkSmartPointer<vtkRenderer> GetRenderer();
+		vtkSmartPointer<vtkActor> GetActor();
 		std::vector<int> GetLastAlpha(AlphasType Type);
 		int GetAlphasSize(AlphasType Type);
 		void GetFiberColor(double coef, double color[]);
 		
-		void SetOriginalPolyData(vtkPolyData* PolyData);
-		void SetModifiedPolyData(vtkPolyData* PolyData);
-		void SetLookupTable(vtkLookupTable* RedMap);
+		void SetOriginalPolyData(vtkSmartPointer<vtkPolyData> PolyData);
+		void SetModifiedPolyData(vtkSmartPointer<vtkPolyData> PolyData);
+		void SetLookupTable(vtkSmartPointer<vtkLookupTable> RedMap);
 		void SetLastAlpha(std::vector<int> Alpha, AlphasType Type);
 		
 		void ClearAlphas(AlphasType Type);
 		void PushBackAlpha(std::vector<int> Alpha, AlphasType Type);
 		void PopBackAlpha(AlphasType Type);
 		std::vector<int> GenerateRandomIds(vtkSmartPointer<vtkPolyData> PolyData);
-		void StartRenderer(vtkPolyData* PolyData);
+		void StartRenderer(vtkSmartPointer<vtkPolyData> PolyData);
 		void Render();
 		void UpdateCells();
 		void InitPlaneCoord(double Bounds[]);
-		vtkImplicitPlaneWidget* GetPlan();
+		vtkSmartPointer<vtkImplicitPlaneWidget> GetPlan();
 		void InitPlan(double Bounds[]);
 		bool IsUnchanged();
 		void UpdateDisplayedFibers();
@@ -69,8 +69,8 @@ class FiberDisplay: public QWidget
 		void NbFibersChanged(int);
 	
 	private:
-		QVTKInteractor* iren;
-		vtkImplicitPlaneWidget* m_Plane;
+		vtkSmartPointer<QVTKInteractor> iren;
+		vtkSmartPointer<vtkImplicitPlaneWidget> m_Plane;
 		QVTKWidget* m_VTKW_RenderWin;
 		vtkSmartPointer<vtkPolyData> m_OriginalPolyData;
 		vtkSmartPointer<vtkPolyData> m_ModifiedPolyData;
