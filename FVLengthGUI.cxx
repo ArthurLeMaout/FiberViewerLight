@@ -63,15 +63,16 @@ void FVLengthGUI::LengthCalculation()
 	vtkPoints* Points=vtkPoints::New();
 	vtkIdType* Ids;
 	vtkIdType NumberOfPoints;
-	Points=m_Display->GetModifiedPolyData()->GetPoints();
-	Lines=m_Display->GetModifiedPolyData()->GetLines();
+	Points=m_Display->GetOriginalPolyData()->GetPoints();
+	Lines=m_Display->GetOriginalPolyData()->GetLines();
 	
 	Lines->InitTraversal();
+	std::cout<<Alpha.size()<<std::endl;
 	for(unsigned int i=0; i<Alpha.size(); i++)
 	{
+		Lines->GetNextCell(NumberOfPoints, Ids);
 		if(Alpha[i]==1)
 		{
-			Lines->GetNextCell(NumberOfPoints, Ids);
 			FiberLength=0;
 			for(unsigned int pointId=0; pointId+1< NumberOfPoints; pointId++)
 			{
@@ -143,7 +144,6 @@ void FVLengthGUI::LengthComputation()
 	m_Display->SetLastAlpha(Alpha, FiberDisplay::Previous);
 	m_Display->UpdateCells();
 	m_Display->Render();
-	
 	QwtIntervalSeriesData* HistData=new QwtIntervalSeriesData;
 	QVector<QwtIntervalSample> Samples;
 	double Step=(Max-Min)/m_SB_NbBars->value();

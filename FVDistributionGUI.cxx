@@ -95,16 +95,14 @@ void FVDistributionGUI::InitDistance(int NbFibers)
 void FVDistributionGUI::SetMethod(std::string Sender)
 {
 	m_Sender=Sender;
-	vtkSmartPointer<vtkPolyData> PolyData;
-	PolyData=m_Display->GetModifiedPolyData();
-	int NbFibers=PolyData->GetNumberOfCells();
+	int NbFibers=m_Display->GetNbModifiedFibers();
 	InitDistance(NbFibers);
 	if(m_Sender=="Gravity")
 		ApplyGravity(NbFibers);
 	else if(m_Sender=="Hausdorff")
-		ApplyHausdorff(NbFibers);
+		ApplyHausdorffMean("Hausdorff");
 	else if(m_Sender=="Mean")
-		ApplyMean(NbFibers);
+		ApplyHausdorffMean("Mean");
 	
 	int Max=(int)GetMaxDistance();
 	std::ostringstream text;
@@ -114,7 +112,7 @@ void FVDistributionGUI::SetMethod(std::string Sender)
 
 void FVDistributionGUI::ApplyGravity(int NbFibers)
 {
-	int CountProgress=0;
+	double CountProgress=0;
 	ComputeCOM();
 	for (int i = 0 ; i < NbFibers ; i++)
 	{
@@ -124,51 +122,72 @@ void FVDistributionGUI::ApplyGravity(int NbFibers)
 			m_Distance[i][j] = ComputeGravDist(i,j);
 			m_Distance[j][i] = m_Distance[i][j];
 			CountProgress++;
-			emit Progress(CountProgress*200/(NbFibers*NbFibers));
+			emit Progress(CountProgress*200.0/(double)(NbFibers*NbFibers));
 		}
 	}
 }
 
-void FVDistributionGUI::ApplyHausdorff(int NbFibers)
+void FVDistributionGUI::ApplyHausdorffMean(std::string Method)
 {
-	int CountProgress=0;
+	int RelevantSourceFiberCount=0, RelevantTargetFiberCount=0;
+	double CountProgress=0;
+	
+	std::vector<int> Alpha=m_Display->GetLastAlpha(FiberDisplay::Previous);
+	vtkSmartPointer<vtkPolyData> PolyData;
+	PolyData=m_Display->GetOriginalPolyData();
+	vtkIdType NbSourcePoints, NbTargetPoints;
+	vtkIdType* SourceIds;
+	vtkIdType* TargetIds;
+	int NbFibers=PolyData->GetNumberOfCells();
+	
 	//This loop will be done as many times as the number of fiber
 	for (int i=0;i<NbFibers;i++)
 	{
-		//the index of the column depends on the number of the client and the line. Here is the complexe function that we have found.
-		for (int j=i;j<NbFibers;j++)
+		if(Alpha[i]==1)
 		{
-			//As each client compute the i,j and the j,i MaxMin, the Hausdorff distance is simply the max from these both.
-			double x1 = ComputeHausDist(j,i);
-			double x2 = ComputeHausDist(i,j);
-			double Max = x1;
-			if (x2 > Max)
-				Max = x2;
-			//result has the kth hausdorff distance for this client
-			m_Distance[i][j] =  Max;
-			m_Distance[j][i] =  Max;
-			CountProgress++;
-			emit Progress(CountProgress*200/(NbFibers*NbFibers));
+			PolyData->GetCellPoints(i,NbSourcePoints,SourceIds);
+			RelevantTargetFiberCount=RelevantSourceFiberCount+1;
+			for (int j=i+1;j<NbFibers;j++)
+			{
+				if(Alpha[j]==1)
+				{
+					double Max;
+					PolyData->GetCellPoints(j,NbTargetPoints,TargetIds);
+					if(Method=="Hausdorff")
+					{
+						double x1 = ComputeHausDist(j,NbSourcePoints,SourceIds);
+						double x2 = ComputeHausDist(i,NbTargetPoints,TargetIds);
+// 						double x1 = ComputeHausDist(NbTargetPoints,TargetIds,NbSourcePoints,SourceIds);
+// 						double x2 = ComputeHausDist(NbSourcePoints,SourceIds,NbTargetPoints,TargetIds);
+						Max = x1;
+						if (x2 > Max)
+							Max = x2;
+					}
+					else if(Method=="Mean")
+					{
+// 						double x1 = ComputeMeanDistance(NbTargetPoints,TargetIds,NbSourcePoints,SourceIds);
+// 						double x2 = ComputeMeanDistance(NbSourcePoints,SourceIds,NbTargetPoints,TargetIds);
+						double x1 = ComputeMeanDistance(j,NbSourcePoints,SourceIds);
+						double x2 = ComputeMeanDistance(i,NbTargetPoints,TargetIds);
+						
+						Max = (x1 + x2) / 2;
+					}
+					m_Distance[RelevantSourceFiberCount][RelevantTargetFiberCount] =  Max;
+					m_Distance[RelevantTargetFiberCount][RelevantSourceFiberCount] =  Max;
+					CountProgress++;
+					RelevantTargetFiberCount++;
+					emit Progress(CountProgress*200.0/(double)(NbFibers*NbFibers));
+				}
+			}
+			RelevantSourceFiberCount++;
 		}
 	}
-}
-
-void FVDistributionGUI::ApplyMean(int NbFibers)
-{
-	int CountProgress=0;
-	for(int i=0; i<NbFibers; i++)
-	{
-		for(int j=i; j<NbFibers; j++)
-		{
-			double x1 = ComputeMeanDistance(j,i);
-			double x2 = ComputeMeanDistance(i,j);
-			double MeanVal = (x1 + x2) / 2;
-			m_Distance[i][j] =  MeanVal;
-			m_Distance[j][i] =  MeanVal;
-			CountProgress++;
-			emit Progress(CountProgress*200/(NbFibers*NbFibers));
-		}
-	}
+// 	for(int i=0; i<m_Distance.size(); i++)
+// 	{
+// 		for(int j=i+1; j<m_Distance.size(); j++)
+// 			std::cout<<m_Distance[i][j]<<" ";
+// 		std::cout<<std::endl;
+// 	}
 }
 
 void FVDistributionGUI::Plot()
@@ -190,37 +209,52 @@ void FVDistributionGUI::Plot()
 }
 
 void FVDistributionGUI::GenerateClasse(std::vector<std::vector<double> > Distance, double Threshold)  
-{
-	m_Mark.clear();
-	std::vector<int> m_Norm;
-	
-	vtkSmartPointer<vtkPolyData> PolyData;
-	PolyData=m_Display->GetModifiedPolyData();
-	int Change, NbFibers=PolyData->GetNumberOfCells();
-	
-	for(int i = 0 ; i < NbFibers ; i++)
-		m_Mark.push_back(i);
-  
-	for(int i = 1 ; i < NbFibers ; i++)
+{	
+	int NbFibers=m_Display->GetNbModifiedFibers();
+	std::vector< std::vector< int> > Bond;
+		std::vector<int> m_Norm;
+	for(int i=0; i < NbFibers; i++)
+		Bond.push_back(std::vector<int>());
+	for(int i=1; i<NbFibers; i++)
 	{
-		for(int j = 0 ; j < i ; j++)
+		for(int j=0; j<i; j++)
 		{
-			if(Distance[i][j] <= Threshold)
-			{
-				Change = m_Mark[i];
-				for(int k = 0 ; k <= i ; k++)
-				{  
-					if(m_Mark[k] == Change)  //m_Mark[i]
-						m_Mark[k] = m_Mark[j];
-				}
-			}
+			if(Distance[i][j]<=Threshold)
+				Bond[i].push_back(j);
 		}
 	}
-
-  //Normalisation of the mark vector  
+	
+	m_Mark.clear();
+	int numClasses = 0;
+	for(int i=0;i<NbFibers; i++)
+	{
+		if(Bond[i].size()>0)
+		{
+			int currentClass = m_Mark[Bond[i][0]];
+			m_Mark.push_back(currentClass);
+			
+			for(int j=1; j<Bond[i].size(); j++)
+			{
+				int queryClass = m_Mark[Bond[i][j]];
+				if (queryClass != currentClass) 
+				{
+					
+					for (int k=1; k<m_Mark.size(); k++)
+					{
+						if(m_Mark[k]==queryClass)
+							m_Mark[k]=currentClass;
+					}
+				}
+			}
+		} else {
+			m_Mark.push_back(numClasses);	
+			numClasses++;
+		}
+	}
+	
+	  //Normalisation of the mark vector  
 	for(int i = 0 ; i < NbFibers ; i++)
 		m_Norm.push_back(-1);
-  
 	int Compt = 1;
 	for(int i = 0 ; i < NbFibers ; i++)
 	{
@@ -256,8 +290,9 @@ int FVDistributionGUI::GetNumberOfClasse()
 
 void FVDistributionGUI::ComputeCOM()
 {
+	std::vector<int> Alpha=m_Display->GetLastAlpha(FiberDisplay::Previous);
 	vtkSmartPointer<vtkPolyData> PolyData;
-	PolyData=m_Display->GetModifiedPolyData();
+	PolyData=m_Display->GetOriginalPolyData();
 	vtkPoints* Points=PolyData->GetPoints();
 	vtkCellArray* Lines=PolyData->GetLines();
 	vtkIdType* Ids;
@@ -267,22 +302,25 @@ void FVDistributionGUI::ComputeCOM()
 	Lines->InitTraversal();
 	for(int i = 0  ; Lines->GetNextCell(NumberOfPoints, Ids); i++)
 	{
-		x = y = z = 0;
-		//For each point of this fiber
-		for(unsigned int j = 0 ; j < NumberOfPoints; j++)
+		if(Alpha[i]==1)
 		{
-			double Point[3];
-			Points->GetPoint(Ids[j], Point);
-			x += Point[0];
-			y += Point[1];
-			z += Point[2];	
+			x = y = z = 0;
+			//For each point of this fiber
+			for(unsigned int j = 0 ; j < NumberOfPoints; j++)
+			{
+				double Point[3];
+				Points->GetPoint(Ids[j], Point);
+				x += Point[0];
+				y += Point[1];
+				z += Point[2];	
+			}
+			std::vector<double> com;
+			com.push_back(x/NumberOfPoints);
+			com.push_back(y/NumberOfPoints);
+			com.push_back(z/NumberOfPoints);
+			
+			m_Com.push_back(com);
 		}
-		std::vector<double> com;
-		com.push_back(x/NumberOfPoints);
-		com.push_back(y/NumberOfPoints);
-		com.push_back(z/NumberOfPoints);
-		
-		m_Com.push_back(com);
 	}
 }
 
@@ -296,129 +334,174 @@ double FVDistributionGUI::ComputeGravDist(int source,int target)
 	return dist;
 }
 
-double FVDistributionGUI::ComputeHausDist(int Source,int Target)
+double FVDistributionGUI::ComputeHausDist(int SourceId,int NbTargetPoints,vtkIdType* TargetIds)
 {  
 	double HausDist = -1;
-	double x,y,z;
-	double xs,ys,zs;
-	double xt,yt,zt;
 	
-	double Distance, MinDist;
+	double Distance;
 	
 	vtkSmartPointer<vtkPolyData> PolyData;
-	PolyData=m_Display->GetModifiedPolyData();
-	vtkIdType NbSourcePoints, NbTargetPoints;
+	PolyData=m_Display->GetOriginalPolyData();
 	vtkPoints* Points=PolyData->GetPoints();
-	vtkIdType* SourceIds;
-	vtkIdType* TargetIds;
-	vtkCellArray* Lines=PolyData->GetLines();
-	
-	Lines->InitTraversal();
-	for(int i=0; i<=Source; i++)
-		Lines->GetNextCell(NbSourcePoints,SourceIds);
-	
-	Lines->InitTraversal();
-	for(int i=0; i<=Target; i++)
-		Lines->GetNextCell(NbTargetPoints,TargetIds);
-	
-	//For each point of the source fiber
-	for(int i=0; i<NbSourcePoints; i++)
-	{
-		double SourcePoint[3]={0,0,0};
-		Points->GetPoint(SourceIds[i],SourcePoint);
-		MinDist = 999999999;
-		//For each point of the target fiber
-		xs=SourcePoint[0];
-		ys=SourcePoint[1];
-		zs=SourcePoint[2];
+	RealImageType::Pointer DistanceMap=m_Display->GetDTVector(SourceId);
 		
 		for(int j=0; j<NbTargetPoints; j++)
 		{
-			//calculate distance between the two points
 			double TargetPoint[3]={0,0,0};
 			Points->GetPoint(TargetIds[j],TargetPoint);
-			xt = TargetPoint[0];
-			yt = TargetPoint[1];
-			zt = TargetPoint[2];
-			x = (xs - xt);
-			y = (ys - yt);
-			z = (zs - zt);
-			Distance = sqrt(x*x+y*y+z*z);
-			//Keep the minimum distance of the distances between the whole points
-			//of the target fiber and one point of the source fiber
-			if (Distance<MinDist)
-				MinDist = Distance;
+			itk::Point<double,3> ITKPoint;
+			ITKPoint[0]=TargetPoint[0];
+			ITKPoint[1]=TargetPoint[1];
+			ITKPoint[2]=TargetPoint[2];
+			
+			ContinuousIndexType ContId;
+			itk::Index<3> Index;
+			
+			DistanceMap->TransformPhysicalPointToContinuousIndex(ITKPoint, ContId);
+			Index[0]=static_cast<long int>(vnl_math_rnd_halfinttoeven(ContId[0]));
+			Index[1]=static_cast<long int>(vnl_math_rnd_halfinttoeven(ContId[1]));
+			Index[2]=static_cast<long int>(vnl_math_rnd_halfinttoeven(ContId[2]));
+			Distance=DistanceMap->GetPixel(Index);
+			
+			if (Distance > HausDist)
+				HausDist = Distance;
 		}
-		 //Finaly, get the maximum of all these minimum
-		if (MinDist > HausDist)
-			HausDist = MinDist;
-	}
-	//return the MinMax, to have the Hausdorff distance
-	//it just remains to take the max between the couple i,j and j,i
 	return HausDist;
 }
 
+// double FVDistributionGUI::ComputeHausDist(int NbSourcePoints,vtkIdType* SourceIds,int NbTargetPoints,vtkIdType* TargetIds)
+// {  
+// 	double HausDist = -1;
+// 	double x,y,z;
+// 	double xs,ys,zs;
+// 	double xt,yt,zt;
+// 	
+// 	double Distance, MinDist;
+// 	
+// 	vtkSmartPointer<vtkPolyData> PolyData;
+// 	PolyData=m_Display->GetOriginalPolyData();
+// 	vtkPoints* Points=PolyData->GetPoints();
+// // 	For each point of the source fiber
+// 	for(int i=0; i<NbSourcePoints; i++)
+// 	{
+// 		double SourcePoint[3]={0,0,0};
+// 		Points->GetPoint(SourceIds[i],SourcePoint);
+// 		MinDist = 999999999;
+// // 		For each point of the target fiber
+// 		xs=SourcePoint[0];
+// 		ys=SourcePoint[1];
+// 		zs=SourcePoint[2];
+// 		
+// 		for(int j=0; j<NbTargetPoints; j++)
+// 		{
+// // 			calculate distance between the two points
+// 			double TargetPoint[3]={0,0,0};
+// 			Points->GetPoint(TargetIds[j],TargetPoint);
+// 			
+// 			xt = TargetPoint[0];
+// 			yt = TargetPoint[1];
+// 			zt = TargetPoint[2];
+// 			x = (xs - xt);
+// 			y = (ys - yt);
+// 			z = (zs - zt);
+// 			Distance = (x*x+y*y+z*z);
+// 			
+// // 			Keep the minimum distance of the distances between the whole points
+// // 			of the target fiber and one point of the source fiber
+// 			if (Distance<MinDist)
+// 				MinDist = Distance;
+// 		}
+// // 		 Finaly, get the maximum of all these minimum
+// 		if (MinDist > HausDist)
+// 			HausDist = MinDist;
+// 	}
+// // 	return the MinMax, to have the Hausdorff distance
+// // 	it just remains to take the max between the couple i,j and j,i
+// 		return sqrt(HausDist);
+// }
+
+
 //Compute the MaxMin between two fibers
-double FVDistributionGUI::ComputeMeanDistance(int Source,int Target)
+double FVDistributionGUI::ComputeMeanDistance(int SourceId,int NbTargetPoints,vtkIdType* TargetIds)
 {
-	double x,y,z;
-	double xs,ys,zs;
-	double xt,yt,zt;
-	
-	double MeanDist, Distance, MinDist, TotalDist = 0;
+	double MeanDist, Distance, TotalDist = 0;
 	
 	vtkSmartPointer<vtkPolyData> PolyData;
-	PolyData=m_Display->GetModifiedPolyData();
-	vtkIdType NbSourcePoints, NbTargetPoints;
+	PolyData=m_Display->GetOriginalPolyData();
 	vtkPoints* Points=PolyData->GetPoints();
-	vtkIdType* SourceIds;
-	vtkIdType* TargetIds;
-	vtkCellArray* Lines=PolyData->GetLines();
-	Lines->InitTraversal();
-	for(int i=0; i<=Source; i++)
-		Lines->GetNextCell(NbSourcePoints,SourceIds);
-	
-	Lines->InitTraversal();
-	for(int i=0; i<=Target; i++)
-		Lines->GetNextCell(NbTargetPoints,TargetIds);
-	
-	//For each point of the source fiber  
-	for (unsigned int i=0;i<NbSourcePoints;i++)
-	{
-		double SourcePoint[3]={0,0,0};
-		Points->GetPoint(SourceIds[i],SourcePoint);
-		MinDist = 999999999;
-		//For each point of the target fiber
-		xs=SourcePoint[0];
-		ys=SourcePoint[1];
-		zs=SourcePoint[2];
+	RealImageType::Pointer DistanceMap=m_Display->GetDTVector(SourceId);
 		
-		for (unsigned int j=0;j<NbTargetPoints;j++)
-		{
-			//calculate distance between the two points
-			double TargetPoint[3]={0,0,0};
-			Points->GetPoint(TargetIds[j],TargetPoint);
-			xt = TargetPoint[0];
-			yt = TargetPoint[1];
-			zt = TargetPoint[2];
-
-			x = (xs - xt);
-			y = (ys - yt);
-			z = (zs - zt);
-			Distance = sqrt(x*x+y*y+z*z);
-			//Keep the minimum distance of the distances between the whole points
-			//of the target fiber and one point of the source fiber
-			if (Distance<MinDist)
-				MinDist = Distance;
-		}
-		//Finaly, sum all min
-		TotalDist += MinDist;
+	for (unsigned int j=0;j<NbTargetPoints;j++)
+	{
+		double TargetPoint[3]={0,0,0};
+		Points->GetPoint(TargetIds[j],TargetPoint);
+		itk::Point<double,3> ITKPoint;
+		ITKPoint[0]=TargetPoint[0];
+		ITKPoint[1]=TargetPoint[1];
+		ITKPoint[2]=TargetPoint[2];
+			
+		ContinuousIndexType ContId;
+		itk::Index<3> Index;
+			
+		DistanceMap->TransformPhysicalPointToContinuousIndex(ITKPoint, ContId);
+		Index[0]=static_cast<long int>(vnl_math_rnd_halfinttoeven(ContId[0]));
+		Index[1]=static_cast<long int>(vnl_math_rnd_halfinttoeven(ContId[1]));
+		Index[2]=static_cast<long int>(vnl_math_rnd_halfinttoeven(ContId[2]));
+		Distance=DistanceMap->GetPixel(Index);
+		TotalDist += Distance;
 	}
-	MeanDist = TotalDist/NbSourcePoints;
-	//return the Meanmin to have the Mean distance
-	//it just remains to take the mean between the couple i,j end j,i
+	MeanDist = TotalDist/NbTargetPoints;
 	return MeanDist;
 }
+
+// //Compute the MaxMin between two fibers
+// double FVDistributionGUI::ComputeMeanDistance(int NbSourcePoints,vtkIdType* SourceIds,int NbTargetPoints,vtkIdType* TargetIds)
+// {
+// 	double x,y,z;
+// 	double xs,ys,zs;
+// 	double xt,yt,zt;
+// 	
+// 	double MeanDist, Distance, MinDist, TotalDist = 0;
+// 	
+// 	vtkSmartPointer<vtkPolyData> PolyData;
+// 	PolyData=m_Display->GetOriginalPolyData();
+// 	vtkPoints* Points=PolyData->GetPoints();
+// 	for (unsigned int i=0;i<NbSourcePoints;i++)
+// 	{
+// 		double SourcePoint[3]={0,0,0};
+// 		Points->GetPoint(SourceIds[i],SourcePoint);
+// 		MinDist = 999999999;
+// 		//For each point of the target fiber
+// 		xs=SourcePoint[0];
+// 		ys=SourcePoint[1];
+// 		zs=SourcePoint[2];
+// 		
+// 		for (unsigned int j=0;j<NbTargetPoints;j++)
+// 		{
+// 			//calculate distance between the two points
+// 			double TargetPoint[3]={0,0,0};
+// 			Points->GetPoint(TargetIds[j],TargetPoint);
+// 			xt = TargetPoint[0];
+// 			yt = TargetPoint[1];
+// 			zt = TargetPoint[2];
+// 
+// 			x = (xs - xt);
+// 			y = (ys - yt);
+// 			z = (zs - zt);
+// 			Distance = (x*x+y*y+z*z);
+// 			//Keep the minimum distance of the distances between the whole points
+// 			//of the target fiber and one point of the source fiber
+// 			if (Distance<MinDist)
+// 				MinDist = Distance;
+// 		}
+// 		//Finaly, sum all min
+// 		TotalDist += MinDist;
+// 	}
+// 	MeanDist = TotalDist/NbSourcePoints;
+// 	//return the Meanmin to have the Mean distance
+// 	//it just remains to take the mean between the couple i,j end j,i
+// 	return sqrt(MeanDist);
+// }
 
 void FVDistributionGUI::UndoAction()
 {

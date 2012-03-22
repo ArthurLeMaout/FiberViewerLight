@@ -69,6 +69,7 @@ class FiberViewerLightGUI: public QWidget
 		void UpdatePercentage(int value);
 		void UpdateNbFibers(int value);
 		void UpdateDisplayedLabel();
+		void UpdateSpacing();
 		
 	private:
 		QGroupBox* m_GB_ActionPanel;
@@ -78,12 +79,19 @@ class FiberViewerLightGUI: public QWidget
 		QGroupBox* m_GB_NormCutPanel;
 		QLineEdit* m_LE_VTKInput;
 		QLineEdit* m_LE_VTKOutput;
+		QLineEdit* m_LE_NbVoxelX;
+		QLineEdit* m_LE_NbVoxelY;
+		QLineEdit* m_LE_NbVoxelZ;
 		QToolButton* m_TB_BrowserVTKInput;
 		QToolButton* m_TB_BrowserVTKOutput;
 		QLabel* m_L_VTKInput;
 		QLabel* m_L_VTKOutput;
 		QLabel* m_L_IO;
 		QLabel* m_L_Processing;
+		QLabel* m_L_NbVoxel;
+		QLabel* m_L_NbVoxelX;
+		QLabel* m_L_NbVoxelY;
+		QLabel* m_L_NbVoxelZ;
 		QLabel* m_L_Navigation;
 		QPushButton* m_PB_Length;
 		QPushButton* m_PB_Gravity;
@@ -96,6 +104,7 @@ class FiberViewerLightGUI: public QWidget
 		QPushButton* m_PB_Plane;
 		QProgressBar* m_ProgressBar;
 		QSlider* m_S_PercentageDisplayed;
+		QPushButton* m_PB_ApplyPercentage;
 		QLabel* m_L_PercentageDisplayed;
 		QLabel* m_L_NbFiber;
 		QLabel* m_L_NbFiberDisplayed;

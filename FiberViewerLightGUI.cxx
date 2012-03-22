@@ -39,7 +39,11 @@ FiberViewerLightGUI::FiberViewerLightGUI(std::string input, std::string output, 
 	connect(m_LengthGUI, SIGNAL(Progress(int)), m_ProgressBar, SLOT(setValue(int)));
 	connect(m_NormCutGUI, SIGNAL(Progress(int)), m_ProgressBar, SLOT(setValue(int)));
 	connect(m_S_PercentageDisplayed, SIGNAL(valueChanged(int)), this, SLOT(UpdatePercentage(int)));
+	connect(m_PB_ApplyPercentage, SIGNAL(clicked()), this, SLOT(UpdateDisplayedLabel()));
 	connect(m_Display, SIGNAL(NbFibersChanged(int)), this, SLOT(UpdateNbFibers(int)));
+	connect(m_LE_NbVoxelX, SIGNAL(editingFinished()), this, SLOT(UpdateSpacing()));
+	connect(m_LE_NbVoxelY, SIGNAL(editingFinished()), this, SLOT(UpdateSpacing()));
+	connect(m_LE_NbVoxelZ, SIGNAL(editingFinished()), this, SLOT(UpdateSpacing()));
 	
 	m_LE_VTKInput->setText(input.c_str());
 	m_LE_VTKOutput->setText(output.c_str());
@@ -55,8 +59,8 @@ void FiberViewerLightGUI::InitWidgets()
 {
 	
 	m_GB_ActionPanel=new QGroupBox("Fiber Viewer Light 1.0");
-	m_GB_ActionPanel->setMinimumSize(300,450);
-	m_GB_ActionPanel->setMaximumSize(300,450);
+	m_GB_ActionPanel->setMinimumSize(300,485);
+	m_GB_ActionPanel->setMaximumSize(300,485);
 	
 	m_GB_LengthPanel=new QGroupBox("Length");
 	m_GB_LengthPanel->setMinimumSize(300,430);
@@ -87,12 +91,22 @@ void FiberViewerLightGUI::InitWidgets()
 	m_ProgressBar->setValue(0);
 	m_LE_VTKInput=new QLineEdit(this);
 	m_LE_VTKOutput=new QLineEdit(this);
+	m_LE_NbVoxelX=new QLineEdit(this);
+	m_LE_NbVoxelX->setEnabled(false);
+	m_LE_NbVoxelY=new QLineEdit(this);
+	m_LE_NbVoxelY->setEnabled(false);
+	m_LE_NbVoxelZ=new QLineEdit(this);
+	m_LE_NbVoxelZ->setEnabled(false);
 	m_TB_BrowserVTKInput=new QToolButton(this);
 	m_TB_BrowserVTKInput->setText("...");
 	m_TB_BrowserVTKOutput=new QToolButton(this);
 	m_TB_BrowserVTKOutput->setText("...");
 	m_L_VTKInput=new QLabel("VTK Input", this);
 	m_L_VTKOutput=new QLabel("VTK Output", this);
+	m_L_NbVoxel=new QLabel("Nb Voxels", this);
+	m_L_NbVoxelX=new QLabel("X", this);
+	m_L_NbVoxelY=new QLabel("Y", this);
+	m_L_NbVoxelZ=new QLabel("Z", this);
 	m_L_IO=new QLabel("Select input/output", this);
 	m_L_IO->setFrameShadow(QFrame::Plain);
 	m_L_Processing=new QLabel("Processing", this);
@@ -113,6 +127,8 @@ void FiberViewerLightGUI::InitWidgets()
 	m_PB_Plane=new QPushButton("Plane Option", this);
 	m_PB_Plane->setEnabled(false);
 	m_L_NbFiber=new QLabel("No Fiber Loaded",this);
+	m_PB_ApplyPercentage=new QPushButton("Apply",this);
+	m_PB_ApplyPercentage->setEnabled(false);
 	m_S_PercentageDisplayed=new QSlider(Qt::Horizontal, this);
 	m_S_PercentageDisplayed->setMinimumWidth(200);
 	m_S_PercentageDisplayed->setRange(1,10);
@@ -135,6 +151,7 @@ void FiberViewerLightGUI::InitWidgets()
 	QGridLayout* GL_FiberIO=new QGridLayout;
 	QHBoxLayout* HL_Navigation=new QHBoxLayout;
 	QGridLayout* GL_FiberInfo=new QGridLayout;
+	QGridLayout* GL_Voxels=new QGridLayout;
 	
 	//Layout settings
 	VL_ActionPanel->addWidget(m_L_IO);
@@ -153,6 +170,14 @@ void FiberViewerLightGUI::InitWidgets()
 	VL_ActionPanel->addWidget(m_PB_Hausdorff);
 	VL_ActionPanel->addWidget(m_PB_Mean);
 	VL_ActionPanel->addWidget(m_PB_NormCut);
+	GL_Voxels->addWidget(m_L_NbVoxel,1,0,Qt::AlignHCenter);
+	GL_Voxels->addWidget(m_L_NbVoxelX,0,1,Qt::AlignHCenter);
+	GL_Voxels->addWidget(m_L_NbVoxelY,0,2,Qt::AlignHCenter);
+	GL_Voxels->addWidget(m_L_NbVoxelZ,0,3,Qt::AlignHCenter);
+	GL_Voxels->addWidget(m_LE_NbVoxelX,1,1);
+	GL_Voxels->addWidget(m_LE_NbVoxelY,1,2);
+	GL_Voxels->addWidget(m_LE_NbVoxelZ,1,3);
+	VL_ActionPanel->addLayout(GL_Voxels);
 	VL_ActionPanel->addWidget(m_L_Navigation);
 	VL_ActionPanel->addWidget(F_HLine3);
 	HL_Navigation->addWidget(m_PB_Undo);
@@ -181,11 +206,11 @@ void FiberViewerLightGUI::InitWidgets()
 	GL_FiberInfo->addWidget(m_L_NbFiberDisplayed,0,1,1,4,Qt::AlignLeft);
 	GL_FiberInfo->addWidget(m_L_PercentageDisplayed,1,0,Qt::AlignRight);
 	GL_FiberInfo->addWidget(m_S_PercentageDisplayed,1,1,1,4,Qt::AlignLeft);
+	GL_FiberInfo->addWidget(m_PB_ApplyPercentage,2,0,Qt::AlignLeft);
 	GL_MainLayout->addLayout(GL_FiberInfo,2,0,2,5);
 	GL_MainLayout->addWidget(m_PB_Plane,3,5);
 	GL_MainLayout->addWidget(m_Display,0,5,3,3);
 	GL_MainLayout->setColumnStretch(6,1);
-
 	setLayout(GL_MainLayout);
 }
 
@@ -222,8 +247,19 @@ void FiberViewerLightGUI::UpdateDisplayedLabel()
 	Displayed=oss.str().c_str();
 	m_L_NbFiberDisplayed->setText(Displayed+" displayed");
 	m_Display->SetNbFibersDisplayed(atoi(m_L_NbFiberDisplayed->text().toStdString().c_str()));
-	m_Display->UpdateDisplayedFibers();
+	m_Display->UpdateCells();
 }
+
+void FiberViewerLightGUI::UpdateSpacing()
+{
+	double Spacing[3], Bounds[6];
+	m_Display->GetBounds(Bounds);
+	Spacing[0]=ceil(Bounds[1]-Bounds[0]+1)/atoi(m_LE_NbVoxelX->text().toStdString().c_str());
+	Spacing[1]=ceil(Bounds[3]-Bounds[2]+1)/atoi(m_LE_NbVoxelY->text().toStdString().c_str());
+	Spacing[2]=ceil(Bounds[5]-Bounds[4]+1)/atoi(m_LE_NbVoxelZ->text().toStdString().c_str());
+	m_Display->SetSpacing(Spacing);
+}
+
 /********************************************************************************
  *BrowserVTKInput: Browser for input VTK file
  ********************************************************************************/
@@ -265,6 +301,22 @@ void FiberViewerLightGUI::EnterVTKInput()
 			InitRedMap(PolyData);
 			m_Display->InitRenderer();
 			m_Display->StartRenderer(PolyData);
+			
+			double Bounds[6];
+			m_Display->GetBounds(Bounds);
+			std::ostringstream oss;
+			oss<<ceil(Bounds[1]-Bounds[0]+1);
+			m_LE_NbVoxelX->setText(oss.str().c_str());
+			oss.str("");
+			oss<<ceil(Bounds[3]-Bounds[2]+1);
+			m_LE_NbVoxelY->setText(oss.str().c_str());
+			oss.str("");
+			oss<<ceil(Bounds[5]-Bounds[4]+1);
+			m_LE_NbVoxelZ->setText(oss.str().c_str());
+			m_LE_NbVoxelX->setEnabled(true);
+			m_LE_NbVoxelY->setEnabled(true);
+			m_LE_NbVoxelZ->setEnabled(true);
+			
 			m_Display->GetActor()->GetMapper()->SetScalarRange(0, PolyData->GetNumberOfCells()-1);
 			m_Display->SetLookupTable(m_RedMap);
 			m_PB_SaveVTK->setEnabled(true);
@@ -281,7 +333,10 @@ void FiberViewerLightGUI::EnterVTKInput()
 			}
 			else
 				m_S_PercentageDisplayed->setValue(10);
+			UpdateDisplayedLabel();
+			m_PB_ApplyPercentage->setEnabled(true);
 			m_S_PercentageDisplayed->setEnabled(true);
+			m_Display->InitDTVector();
 		}
 	}
 }
@@ -378,15 +433,51 @@ void FiberViewerLightGUI::SaveVTK()
 		BrowserVTKOutput();
 	if(m_LE_VTKOutput->text()!="")
 	{
+		std::vector<int> Alpha=m_Display->GetLastAlpha(FiberDisplay::Previous);
 		vtkSmartPointer<vtkPolyData> FinalPolyData=vtkSmartPointer<vtkPolyData>::New();
-		FinalPolyData->DeepCopy(m_Display->GetModifiedPolyData());
-		FinalPolyData->GetPointData()->SetScalars(0);
-		FinalPolyData->BuildCells();
-		FinalPolyData->BuildLinks();
+		vtkSmartPointer<vtkFloatArray> NewTensors=vtkSmartPointer<vtkFloatArray>::New();
+		vtkSmartPointer<vtkPoints> NewPoints=vtkSmartPointer<vtkPoints>::New();
+		vtkSmartPointer<vtkCellArray> NewLines=vtkSmartPointer<vtkCellArray>::New();
+		NewTensors->SetNumberOfComponents(9);
+		vtkDataArray* Tensors=m_Display->GetOriginalPolyData()->GetPointData()->GetTensors();
+	
+	
+		vtkPoints* Points=m_Display->GetOriginalPolyData()->GetPoints();
+		vtkCellArray* Lines=m_Display->GetOriginalPolyData()->GetLines();
+		vtkIdType* Ids;
+		vtkIdType NumberOfPoints;
+		int NewId=0;
+		Lines->InitTraversal();
+		for(int i=0; Lines->GetNextCell(NumberOfPoints, Ids); i++)
+		{
+			if(Alpha[i]==1)
+			{
+				vtkSmartPointer<vtkPolyLine> NewLine=vtkSmartPointer<vtkPolyLine>::New();
+				NewLine->GetPointIds()->SetNumberOfIds(NumberOfPoints);
+				for(int j=0; j<NumberOfPoints; j++)
+				{
+					NewPoints->InsertNextPoint(Points->GetPoint(Ids[j]));
+					NewLine->GetPointIds()->SetId(j,NewId);
+					NewId++;
+					double tensorValue[9];
+					for(int k=0; k<9; k++)
+						tensorValue[k]=Tensors->GetComponent(Ids[j],k);
+					NewTensors->InsertNextTuple(tensorValue);
+				}
+				NewLines->InsertNextCell(NewLine);
+			}
+		
+		}
+		FinalPolyData->SetPoints(NewPoints);
+		FinalPolyData->GetPointData()->SetTensors(NewTensors);
+		FinalPolyData->SetLines(NewLines);
+		
+		
+		
 		if (m_LE_VTKOutput->text().toStdString().rfind(".vtk") != std::string::npos)
 		{
 			vtkSmartPointer<vtkPolyDataWriter> fiberwriter = vtkPolyDataWriter::New();
-// 			fiberwriter->SetFileTypeToBinary();
+			fiberwriter->SetFileTypeToBinary();
 			fiberwriter->SetFileName(m_LE_VTKOutput->text().toStdString().c_str());
 			fiberwriter->SetInput(FinalPolyData);
 			fiberwriter->Update();
@@ -453,6 +544,7 @@ void FiberViewerLightGUI::CloseLengthPanel(FVPanelGUI::ExitSignal Type)
 
 void FiberViewerLightGUI::OpenDistributionPanel()
 {
+	m_Display->UpdateDT();
 	if(m_LE_VTKInput->text()!="")
 	{
 		if(sender()==m_PB_Gravity)
@@ -471,6 +563,7 @@ void FiberViewerLightGUI::OpenDistributionPanel()
 
 void FiberViewerLightGUI::OpenNormCutPanel()
 {
+	m_Display->UpdateDT();
 	if(m_LE_VTKInput->text()!="")
 	{
 		m_NormCutGUI->ApplyWeight();

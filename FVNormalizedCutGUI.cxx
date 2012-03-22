@@ -44,9 +44,7 @@ FVNormCutGUI::FVNormCutGUI(QWidget* Parent, FiberDisplay* Display):FVPanelGUI(Pa
 void FVNormCutGUI::InitWeight()
 {
 	m_Weight.clear();
-	vtkSmartPointer<vtkPolyData> PolyData;
-	PolyData=m_Display->GetModifiedPolyData();
-	int NbFibers=PolyData->GetNumberOfCells();
+	int NbFibers=m_Display->GetNbModifiedFibers();
 	for (int i = 0 ; i < NbFibers ; i++)
 	{
 		std::vector<double> Line;
@@ -55,96 +53,159 @@ void FVNormCutGUI::InitWeight()
 			Line.push_back(0);
 		m_Weight.push_back(Line);
 	}
+	std::cout<<NbFibers<<std::endl;
 }
 
 void FVNormCutGUI::ApplyWeight()
 {
+	std::vector<int> Alpha=m_Display->GetLastAlpha(FiberDisplay::Previous);
 	vtkSmartPointer<vtkPolyData> PolyData;
-	PolyData=m_Display->GetModifiedPolyData();
+	PolyData=m_Display->GetOriginalPolyData();
+	vtkIdType NbSourcePoints, NbTargetPoints;
+	vtkIdType* SourceIds;
+	vtkIdType* TargetIds;
+	vtkCellArray* LinesSource=PolyData->GetLines();
+	vtkCellArray* LinesTarget=PolyData->GetLines();
 	int NbFibers=PolyData->GetNumberOfCells();
 	int CountProgress=0;
+	int RelevantSourceFiberCount=0, RelevantTargetFiberCount=0;
 	InitWeight();
 	for(int i=0; i<NbFibers; i++)
 	{
-		for(int j=i; j<NbFibers; j++)
+		if(Alpha[i]==1)
 		{
-			double x1 = ComputeMeanDistance(j,i);
-			double x2 = ComputeMeanDistance(i,j);
-			double MeanVal = (x1 + x2) / 2;
-			if(MeanVal!=0)
+			PolyData->GetCellPoints(i,NbSourcePoints,SourceIds);
+			RelevantTargetFiberCount=RelevantSourceFiberCount+1;
+			for(int j=i+1; j<NbFibers; j++)
 			{
-				m_Weight[i][j] = 1/MeanVal;
-				m_Weight[j][i] = 1/MeanVal;
+				if(Alpha[j]==1)
+				{
+					PolyData->GetCellPoints(j,NbTargetPoints,TargetIds);
+					double x1 = ComputeMeanDistance(j,NbSourcePoints,SourceIds);
+					double x2 = ComputeMeanDistance(i,NbTargetPoints,TargetIds);
+					double MeanVal = (x1 + x2) / 2;
+					if(MeanVal!=0)
+					{
+						m_Weight[RelevantSourceFiberCount][RelevantTargetFiberCount] = 1/MeanVal;
+						m_Weight[RelevantTargetFiberCount][RelevantSourceFiberCount] = 1/MeanVal;
+					}
+					else
+					{
+						m_Weight[RelevantSourceFiberCount][RelevantTargetFiberCount]=0;
+						m_Weight[RelevantTargetFiberCount][RelevantSourceFiberCount]=0;
+					}
+					CountProgress++;
+					emit Progress(CountProgress*200/(NbFibers*NbFibers));
+					RelevantTargetFiberCount++;
+				}
 			}
-			else
-			{
-				m_Weight[i][j]=0;
-				m_Weight[j][i]=0;
-			}
-			CountProgress++;
-			emit Progress(CountProgress*200/(NbFibers*NbFibers));
+			RelevantSourceFiberCount++;
 		}
 	}
 }
 
-double FVNormCutGUI::ComputeMeanDistance(int Source,int Target)
+// double FVNormCutGUI::ComputeMeanDistance(int Source,int Target)
+// {
+// 	double x,y,z;
+// 	double xs,ys,zs;
+// 	double xt,yt,zt;
+// 	
+// 	double MeanDist, Distance, MinDist, TotalDist = 0;
+// 	
+// 	std::vector<int> Alpha=m_Display->GetLastAlpha(FiberDisplay::Previous);
+// 	vtkSmartPointer<vtkPolyData> PolyData;
+// 	PolyData=m_Display->GetOriginalPolyData();
+// 	vtkIdType NbSourcePoints, NbTargetPoints;
+// 	vtkPoints* Points=PolyData->GetPoints();
+// 	vtkIdType* SourceIds;
+// 	vtkIdType* TargetIds;
+// 	vtkCellArray* Lines=PolyData->GetLines();
+// 	Lines->InitTraversal();
+// 	for(int i=0, Count=0; Lines->GetNextCell(NbSourcePoints,SourceIds); i++)
+// 	{
+// 		if(Count==Source)
+// 			break;
+// 		if(Alpha[i]==1)
+// 			Count++;
+// 	}
+// 	
+// 	Lines->InitTraversal();
+// 	for(int i=0, Count=0; Lines->GetNextCell(NbTargetPoints,TargetIds); i++)
+// 	{
+// 		if(Count==Target)
+// 			break;
+// 		if(Alpha[i]==1)
+// 			Count++;
+// 	}
+// 	
+// 	//For each point of the source fiber  
+// 	for (unsigned int i=0;i<NbSourcePoints;i++)
+// 	{
+// 		double SourcePoint[3]={0,0,0};
+// 		Points->GetPoint(SourceIds[i],SourcePoint);
+// 		MinDist = 999999999;
+// 		//For each point of the target fiber
+// 		xs=SourcePoint[0];
+// 		ys=SourcePoint[1];
+// 		zs=SourcePoint[2];
+// 		
+// 		for (unsigned int j=0;j<NbTargetPoints;j++)
+// 		{
+// 			//calculate distance between the two points
+// 			double TargetPoint[3]={0,0,0};
+// 			Points->GetPoint(TargetIds[j],TargetPoint);
+// 			xt = TargetPoint[0];
+// 			yt = TargetPoint[1];
+// 			zt = TargetPoint[2];
+// 
+// 			x = (xs - xt);
+// 			y = (ys - yt);
+// 			z = (zs - zt);
+// 			Distance = sqrt(x*x+y*y+z*z);
+// 			//Keep the minimum distance of the distances between the whole points
+// 			//of the target fiber and one point of the source fiber
+// 			if (Distance<MinDist)
+// 				MinDist = Distance;
+// 		}
+// 		//Finaly, sum all min
+// 		TotalDist += MinDist;
+// 	}
+// 	MeanDist = TotalDist/NbSourcePoints;
+// 	//return the Meanmin to have the Mean distance
+// 	//it just remains to take the mean between the couple i,j end j,i
+// 	return MeanDist;
+// }
+
+//Compute the MaxMin between two fibers
+double FVNormCutGUI::ComputeMeanDistance(int SourceId,int NbTargetPoints,vtkIdType* TargetIds)
 {
-	double x,y,z;
-	double xs,ys,zs;
-	double xt,yt,zt;
-	
-	double MeanDist, Distance, MinDist, TotalDist = 0;
+	double MeanDist, Distance, TotalDist = 0;
 	
 	vtkSmartPointer<vtkPolyData> PolyData;
-	PolyData=m_Display->GetModifiedPolyData();
-	vtkIdType NbSourcePoints, NbTargetPoints;
+	PolyData=m_Display->GetOriginalPolyData();
 	vtkPoints* Points=PolyData->GetPoints();
-	vtkIdType* SourceIds;
-	vtkIdType* TargetIds;
-	vtkCellArray* Lines=PolyData->GetLines();
-	Lines->InitTraversal();
-	for(int i=0; i<=Source; i++)
-		Lines->GetNextCell(NbSourcePoints,SourceIds);
-	
-	Lines->InitTraversal();
-	for(int i=0; i<=Target; i++)
-		Lines->GetNextCell(NbTargetPoints,TargetIds);
-	
-	//For each point of the source fiber  
-	for (unsigned int i=0;i<NbSourcePoints;i++)
-	{
-		double SourcePoint[3]={0,0,0};
-		Points->GetPoint(SourceIds[i],SourcePoint);
-		MinDist = 999999999;
-		//For each point of the target fiber
-		xs=SourcePoint[0];
-		ys=SourcePoint[1];
-		zs=SourcePoint[2];
+	RealImageType::Pointer DistanceMap=m_Display->GetDTVector(SourceId);
 		
-		for (unsigned int j=0;j<NbTargetPoints;j++)
-		{
-			//calculate distance between the two points
-			double TargetPoint[3]={0,0,0};
-			Points->GetPoint(TargetIds[j],TargetPoint);
-			xt = TargetPoint[0];
-			yt = TargetPoint[1];
-			zt = TargetPoint[2];
-
-			x = (xs - xt);
-			y = (ys - yt);
-			z = (zs - zt);
-			Distance = sqrt(x*x+y*y+z*z);
-			//Keep the minimum distance of the distances between the whole points
-			//of the target fiber and one point of the source fiber
-			if (Distance<MinDist)
-				MinDist = Distance;
-		}
-		//Finaly, sum all min
-		TotalDist += MinDist;
+	for (unsigned int j=0;j<NbTargetPoints;j++)
+	{
+		double TargetPoint[3]={0,0,0};
+		Points->GetPoint(TargetIds[j],TargetPoint);
+		itk::Point<double,3> ITKPoint;
+		ITKPoint[0]=TargetPoint[0];
+		ITKPoint[1]=TargetPoint[1];
+		ITKPoint[2]=TargetPoint[2];
+			
+		ContinuousIndexType ContId;
+		itk::Index<3> Index;
+			
+		DistanceMap->TransformPhysicalPointToContinuousIndex(ITKPoint, ContId);
+		Index[0]=static_cast<long int>(vnl_math_rnd_halfinttoeven(ContId[0]));
+		Index[1]=static_cast<long int>(vnl_math_rnd_halfinttoeven(ContId[1]));
+		Index[2]=static_cast<long int>(vnl_math_rnd_halfinttoeven(ContId[2]));
+		Distance=DistanceMap->GetPixel(Index);
+		TotalDist += Distance;
 	}
-	MeanDist = TotalDist/NbSourcePoints;
-	//return the Meanmin to have the Mean distance
-	//it just remains to take the mean between the couple i,j end j,i
+	MeanDist = TotalDist/NbTargetPoints;
 	return MeanDist;
 }
 

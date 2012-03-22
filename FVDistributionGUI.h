@@ -41,14 +41,15 @@ class FVDistributionGUI : public FVPanelGUI
 		void SetMethod(std::string Sender);
 		std::vector<int> GetMark(){return m_Mark;}
 		void ApplyGravity(int NbFibers);
-		void ApplyHausdorff(int NbFibers);
-		void ApplyMean(int NbFibers);
+		void ApplyHausdorffMean(std::string Method);
 		void GenerateClasse(std::vector<std::vector<double> > Distance, double Threshold);
 		int GetNumberOfClasse();
 		void ComputeCOM();
 		double ComputeGravDist(int source,int target);
-		double ComputeHausDist(int Source,int Target);
-		double ComputeMeanDistance(int Source,int Target);
+		double ComputeHausDist(int SourceId,int NbTargetPoints,vtkIdType* TargetIds);
+// 		double ComputeHausDist(int NbSourcePoints,vtkIdType* SourceIds,int NbTargetPoints,vtkIdType* TargetIds);
+// 		double ComputeMeanDistance(int NbSourcePoints,vtkIdType* SourceIds,int NbTargetPoints,vtkIdType* TargetIds);
+		double ComputeMeanDistance(int SourceId,int NbTargetPoints,vtkIdType* TargetIds);
 		double GetMaxDistance();
 		
 	protected slots:

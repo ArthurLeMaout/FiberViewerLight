@@ -23,7 +23,8 @@ class FVNormCutGUI: public FVPanelGUI
 		FVNormCutGUI(QWidget* Parent, FiberDisplay* Display);
 		void InitWeight();
 		void ApplyWeight();
-		double ComputeMeanDistance(int Source,int Target);
+// 		double ComputeMeanDistance(int Source,int Target);
+		double ComputeMeanDistance(int SourceId,int NbTargetPoints,vtkIdType* TargetIds);
 		std::vector<int> GetMark(){return m_Mark;}
 		int GetNumberOfClasse();
 		void GenerateClass();
