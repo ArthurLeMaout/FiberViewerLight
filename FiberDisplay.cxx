@@ -523,6 +523,7 @@ void FiberDisplay::UpdateDT()
 			DanielssonFilter->Update();
 			m_DTVector[i]=DanielssonFilter->GetDistanceMap();
 		}
+		emit Progress((double)i*100.0/(double)MaxFibers);
 	}
 }
 

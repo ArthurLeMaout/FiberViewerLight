@@ -85,6 +85,7 @@ class FiberDisplay: public QWidget
 		
 	signals:
 		void NbFibersChanged(int);
+		void Progress(int);
 	
 	private:
 		vtkSmartPointer<QVTKInteractor> iren;

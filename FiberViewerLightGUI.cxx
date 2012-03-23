@@ -38,6 +38,7 @@ FiberViewerLightGUI::FiberViewerLightGUI(std::string input, std::string output, 
 	connect(m_DistributionGUI, SIGNAL(Progress(int)), m_ProgressBar, SLOT(setValue(int)));
 	connect(m_LengthGUI, SIGNAL(Progress(int)), m_ProgressBar, SLOT(setValue(int)));
 	connect(m_NormCutGUI, SIGNAL(Progress(int)), m_ProgressBar, SLOT(setValue(int)));
+	connect(m_Display, SIGNAL(Progress(int)), m_ProgressBar, SLOT(setValue(int)));
 	connect(m_S_PercentageDisplayed, SIGNAL(valueChanged(int)), this, SLOT(UpdatePercentage(int)));
 	connect(m_PB_ApplyPercentage, SIGNAL(clicked()), this, SLOT(UpdateDisplayedLabel()));
 	connect(m_Display, SIGNAL(NbFibersChanged(int)), this, SLOT(UpdateNbFibers(int)));
@@ -226,7 +227,6 @@ void FiberViewerLightGUI::UpdatePercentage(int value)
 	oss<<value*10;
 	Percentage=oss.str().c_str();
 	m_L_PercentageDisplayed->setText(Percentage+"%");
-	UpdateDisplayedLabel();
 }
 
 void FiberViewerLightGUI::UpdateNbFibers(int value)
@@ -544,15 +544,21 @@ void FiberViewerLightGUI::CloseLengthPanel(FVPanelGUI::ExitSignal Type)
 
 void FiberViewerLightGUI::OpenDistributionPanel()
 {
-	m_Display->UpdateDT();
+	
 	if(m_LE_VTKInput->text()!="")
 	{
 		if(sender()==m_PB_Gravity)
 			m_DistributionGUI->SetMethod("Gravity");
 		else if(sender()==m_PB_Hausdorff)
+		{
+			m_Display->UpdateDT();
 			m_DistributionGUI->SetMethod("Hausdorff");
+		}
 		else if(sender()==m_PB_Mean)
+		{
+			m_Display->UpdateDT();
 			m_DistributionGUI->SetMethod("Mean");
+		}
 		m_GB_ActionPanel->hide();
 		m_GB_DistributionPanel->show();
 		m_ProgressBar->setValue(0);
@@ -563,9 +569,9 @@ void FiberViewerLightGUI::OpenDistributionPanel()
 
 void FiberViewerLightGUI::OpenNormCutPanel()
 {
-	m_Display->UpdateDT();
 	if(m_LE_VTKInput->text()!="")
 	{
+		m_Display->UpdateDT();
 		m_NormCutGUI->ApplyWeight();
 		m_GB_ActionPanel->hide();
 		m_GB_NormCutPanel->show();
