@@ -5,6 +5,7 @@
 #include <QPushButton>
 #include <QLineEdit>
 #include <QLabel>
+#include <QFileDialog>
 #include "FiberDisplay.h"
 #include <sstream>
 #include <vtkImplicitPlaneWidget.h>
@@ -19,12 +20,16 @@ class PlanSetting: public QWidget
 	public slots:
 		void UpdatePlan();
 		void GetParam();
+		void SavePlan();
+		void LoadPlan();
 		
 	protected:
 		FiberDisplay* m_Display;
 		QPushButton* m_PB_Close;
-		QPushButton* m_PB_UpdatePlane;
+		QPushButton* m_PB_UpdatePlan;
 		QPushButton* m_PB_GetParam;
+		QPushButton* m_PB_SavePlan;
+		QPushButton* m_PB_LoadPlan;
 		QLabel* m_L_X;
 		QLabel* m_L_Y;
 		QLabel* m_L_Z;

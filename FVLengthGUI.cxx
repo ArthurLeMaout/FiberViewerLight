@@ -67,7 +67,6 @@ void FVLengthGUI::LengthCalculation()
 	Lines=m_Display->GetOriginalPolyData()->GetLines();
 	
 	Lines->InitTraversal();
-	std::cout<<Alpha.size()<<std::endl;
 	for(unsigned int i=0; i<Alpha.size(); i++)
 	{
 		Lines->GetNextCell(NumberOfPoints, Ids);

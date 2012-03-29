@@ -200,7 +200,7 @@ void FiberViewerLightGUI::InitWidgets()
 	m_GB_NormCutPanel->setLayout(m_NormCutGUI->layout());
 	GL_MainLayout->addWidget(m_GB_NormCutPanel,0,4,Qt::AlignTop);
 	
-	GL_MainLayout->addWidget(m_PlanSetting,1,0,1,5);
+	GL_MainLayout->addWidget(m_PlanSetting,1,0,1,5,Qt::AlignBottom);
 	GL_MainLayout->setRowStretch(1,1);
 	
 	GL_FiberInfo->addWidget(m_L_NbFiber,0,0,Qt::AlignLeft);
@@ -349,7 +349,7 @@ void FiberViewerLightGUI::BrowserVTKOutput()
 {
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 	
-	QString file = QFileDialog::getSaveFileName(this, "Save VTK file", "/", "VTK (*.vtk)");
+	QString file = QFileDialog::getSaveFileName(this, "Save VTK file", ".", "VTK (*.vtk)");
 	
 	if(file!=NULL)
 		m_LE_VTKOutput->setText(file);
