@@ -16,6 +16,8 @@
 #include <QSpinBox>
 #include <QMessageBox>
 #include <QProgressBar>
+#include <QRadioButton>
+#include <QButtonGroup>
 
 #include "QVTKWidget.h"
 
@@ -44,17 +46,20 @@ class FiberViewerLightGUI: public QWidget
 	Q_OBJECT
 			
 	public:
-		FiberViewerLightGUI(std::string input="", std::string output="", QWidget* parent=0);
+		FiberViewerLightGUI(bool nogui=0,std::string input="", std::string output="", QWidget* parent=0);
 		void InitWidgets();
 		void InitRedMap(vtkPolyData* PolyData);
 		vtkSmartPointer<vtkPolyData> LoadVTK(std::string FileName);
 		void SetAtLastAlphas();
 		int GetNbFiberDisplayed();
+		bool ProcessWithoutGUI(std::string Input, std::string OutputFolder, std::vector<std::string> ProcessList, bool DT);
+		bool GetNoGUI(){return m_NoGUI;}
 		
 	protected slots:
 		void BrowserVTKInput();
 		void EnterVTKInput();
-		void BrowserVTKOutput();
+		void BrowserOutput();
+		void EnterOutputFolder();
 		void SaveVTK();
 		void OpenLengthPanel();
 		void OpenDistributionPanel();
@@ -70,6 +75,10 @@ class FiberViewerLightGUI: public QWidget
 		void UpdateNbFibers(int value);
 		void UpdateDisplayedLabel();
 		void UpdateSpacing();
+		void EnableVoxels();
+		void EnableProcessingOption();
+		void SaveDistanceTable(std::string Process);
+		bool LoadDistanceTable(std::string Process);
 		
 	private:
 		QGroupBox* m_GB_ActionPanel;
@@ -78,16 +87,17 @@ class FiberViewerLightGUI: public QWidget
 		QGroupBox* m_GB_DisplayClassPanel;
 		QGroupBox* m_GB_NormCutPanel;
 		QLineEdit* m_LE_VTKInput;
-		QLineEdit* m_LE_VTKOutput;
+		QLineEdit* m_LE_OutputFolder;
 		QLineEdit* m_LE_NbVoxelX;
 		QLineEdit* m_LE_NbVoxelY;
 		QLineEdit* m_LE_NbVoxelZ;
 		QToolButton* m_TB_BrowserVTKInput;
-		QToolButton* m_TB_BrowserVTKOutput;
+		QToolButton* m_TB_BrowserOutput;
 		QLabel* m_L_VTKInput;
-		QLabel* m_L_VTKOutput;
+		QLabel* m_L_OutputFolder;
 		QLabel* m_L_IO;
 		QLabel* m_L_Processing;
+		QLabel* m_L_ProcessingOption;
 		QLabel* m_L_NbVoxel;
 		QLabel* m_L_NbVoxelX;
 		QLabel* m_L_NbVoxelY;
@@ -102,13 +112,19 @@ class FiberViewerLightGUI: public QWidget
 		QPushButton* m_PB_Redo;
 		QPushButton* m_PB_SaveVTK;
 		QPushButton* m_PB_Plane;
+		QRadioButton* m_RB_DT;
+		QRadioButton* m_RB_Classic;
+		QRadioButton* m_RB_Save;
+		QRadioButton* m_RB_Load;
 		QProgressBar* m_ProgressBar;
 		QSlider* m_S_PercentageDisplayed;
 		QPushButton* m_PB_ApplyPercentage;
 		QLabel* m_L_PercentageDisplayed;
 		QLabel* m_L_NbFiber;
 		QLabel* m_L_NbFiberDisplayed;
+		std::string m_PreviousVtkFileName;
 		std::string m_VtkFileName;
+		std::string m_OutputFolder;
 		
 		FVLengthGUI* m_LengthGUI;
 		FVDistributionGUI* m_DistributionGUI;
@@ -117,6 +133,7 @@ class FiberViewerLightGUI: public QWidget
 		vtkSmartPointer<vtkLookupTable> m_RedMap;
 		FiberDisplay* m_Display;
 		PlanSetting* m_PlanSetting;
+		bool m_NoGUI;
 };
 
 #endif

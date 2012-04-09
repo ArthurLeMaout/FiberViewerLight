@@ -92,7 +92,7 @@ void FVDistributionGUI::InitDistance(int NbFibers)
 	}
 }
 
-void FVDistributionGUI::SetMethod(std::string Sender)
+void FVDistributionGUI::SetMethod(std::string Sender, bool Type)
 {
 	m_Sender=Sender;
 	int NbFibers=m_Display->GetNbModifiedFibers();
@@ -100,9 +100,9 @@ void FVDistributionGUI::SetMethod(std::string Sender)
 	if(m_Sender=="Gravity")
 		ApplyGravity(NbFibers);
 	else if(m_Sender=="Hausdorff")
-		ApplyHausdorffMean("Hausdorff");
+		ApplyHausdorffMean("Hausdorff", Type);
 	else if(m_Sender=="Mean")
-		ApplyHausdorffMean("Mean");
+		ApplyHausdorffMean("Mean", Type);
 	
 	int Max=(int)GetMaxDistance();
 	std::ostringstream text;
@@ -127,7 +127,7 @@ void FVDistributionGUI::ApplyGravity(int NbFibers)
 	}
 }
 
-void FVDistributionGUI::ApplyHausdorffMean(std::string Method)
+void FVDistributionGUI::ApplyHausdorffMean(std::string Method, bool Type)
 {
 	int RelevantSourceFiberCount=0, RelevantTargetFiberCount=0;
 	double CountProgress=0;
@@ -151,25 +151,36 @@ void FVDistributionGUI::ApplyHausdorffMean(std::string Method)
 			{
 				if(Alpha[j]==1)
 				{
-					double Max;
+					double Max, x1, x2;
 					PolyData->GetCellPoints(j,NbTargetPoints,TargetIds);
 					if(Method=="Hausdorff")
 					{
-						double x1 = ComputeHausDist(j,NbSourcePoints,SourceIds);
-						double x2 = ComputeHausDist(i,NbTargetPoints,TargetIds);
-// 						double x1 = ComputeHausDist(NbTargetPoints,TargetIds,NbSourcePoints,SourceIds);
-// 						double x2 = ComputeHausDist(NbSourcePoints,SourceIds,NbTargetPoints,TargetIds);
+						if(Type)
+						{
+							x1 = ComputeHausDist(j,NbSourcePoints,SourceIds);
+							x2 = ComputeHausDist(i,NbTargetPoints,TargetIds);
+						}
+						else
+						{
+							x1 = ComputeHausDist(NbTargetPoints,TargetIds,NbSourcePoints,SourceIds);
+							x2 = ComputeHausDist(NbSourcePoints,SourceIds,NbTargetPoints,TargetIds);
+						}
 						Max = x1;
 						if (x2 > Max)
 							Max = x2;
 					}
 					else if(Method=="Mean")
 					{
-// 						double x1 = ComputeMeanDistance(NbTargetPoints,TargetIds,NbSourcePoints,SourceIds);
-// 						double x2 = ComputeMeanDistance(NbSourcePoints,SourceIds,NbTargetPoints,TargetIds);
-						double x1 = ComputeMeanDistance(j,NbSourcePoints,SourceIds);
-						double x2 = ComputeMeanDistance(i,NbTargetPoints,TargetIds);
-						
+						if(Type)
+						{
+							x1 = ComputeMeanDistance(j,NbSourcePoints,SourceIds);
+							x2 = ComputeMeanDistance(i,NbTargetPoints,TargetIds);
+						}
+						else
+						{
+							x1 = ComputeMeanDistance(NbTargetPoints,TargetIds,NbSourcePoints,SourceIds);
+							x2 = ComputeMeanDistance(NbSourcePoints,SourceIds,NbTargetPoints,TargetIds);
+						}
 						Max = (x1 + x2) / 2;
 					}
 					m_Distance[RelevantSourceFiberCount][RelevantTargetFiberCount] =  Max;
@@ -369,56 +380,56 @@ double FVDistributionGUI::ComputeHausDist(int SourceId,int NbTargetPoints,vtkIdT
 	return HausDist;
 }
 
-// double FVDistributionGUI::ComputeHausDist(int NbSourcePoints,vtkIdType* SourceIds,int NbTargetPoints,vtkIdType* TargetIds)
-// {  
-// 	double HausDist = -1;
-// 	double x,y,z;
-// 	double xs,ys,zs;
-// 	double xt,yt,zt;
-// 	
-// 	double Distance, MinDist;
-// 	
-// 	vtkSmartPointer<vtkPolyData> PolyData;
-// 	PolyData=m_Display->GetOriginalPolyData();
-// 	vtkPoints* Points=PolyData->GetPoints();
-// // 	For each point of the source fiber
-// 	for(int i=0; i<NbSourcePoints; i++)
-// 	{
-// 		double SourcePoint[3]={0,0,0};
-// 		Points->GetPoint(SourceIds[i],SourcePoint);
-// 		MinDist = 999999999;
-// // 		For each point of the target fiber
-// 		xs=SourcePoint[0];
-// 		ys=SourcePoint[1];
-// 		zs=SourcePoint[2];
-// 		
-// 		for(int j=0; j<NbTargetPoints; j++)
-// 		{
-// // 			calculate distance between the two points
-// 			double TargetPoint[3]={0,0,0};
-// 			Points->GetPoint(TargetIds[j],TargetPoint);
-// 			
-// 			xt = TargetPoint[0];
-// 			yt = TargetPoint[1];
-// 			zt = TargetPoint[2];
-// 			x = (xs - xt);
-// 			y = (ys - yt);
-// 			z = (zs - zt);
-// 			Distance = (x*x+y*y+z*z);
-// 			
-// // 			Keep the minimum distance of the distances between the whole points
-// // 			of the target fiber and one point of the source fiber
-// 			if (Distance<MinDist)
-// 				MinDist = Distance;
-// 		}
-// // 		 Finaly, get the maximum of all these minimum
-// 		if (MinDist > HausDist)
-// 			HausDist = MinDist;
-// 	}
-// // 	return the MinMax, to have the Hausdorff distance
-// // 	it just remains to take the max between the couple i,j and j,i
-// 		return sqrt(HausDist);
-// }
+double FVDistributionGUI::ComputeHausDist(int NbSourcePoints,vtkIdType* SourceIds,int NbTargetPoints,vtkIdType* TargetIds)
+{  
+	double HausDist = -1;
+	double x,y,z;
+	double xs,ys,zs;
+	double xt,yt,zt;
+	
+	double Distance, MinDist;
+	
+	vtkSmartPointer<vtkPolyData> PolyData;
+	PolyData=m_Display->GetOriginalPolyData();
+	vtkPoints* Points=PolyData->GetPoints();
+// 	For each point of the source fiber
+	for(int i=0; i<NbSourcePoints; i++)
+	{
+		double SourcePoint[3]={0,0,0};
+		Points->GetPoint(SourceIds[i],SourcePoint);
+		MinDist = 999999999;
+// 		For each point of the target fiber
+		xs=SourcePoint[0];
+		ys=SourcePoint[1];
+		zs=SourcePoint[2];
+		
+		for(int j=0; j<NbTargetPoints; j++)
+		{
+// 			calculate distance between the two points
+			double TargetPoint[3]={0,0,0};
+			Points->GetPoint(TargetIds[j],TargetPoint);
+			
+			xt = TargetPoint[0];
+			yt = TargetPoint[1];
+			zt = TargetPoint[2];
+			x = (xs - xt);
+			y = (ys - yt);
+			z = (zs - zt);
+			Distance = (x*x+y*y+z*z);
+			
+// 			Keep the minimum distance of the distances between the whole points
+// 			of the target fiber and one point of the source fiber
+			if (Distance<MinDist)
+				MinDist = Distance;
+		}
+// 		 Finaly, get the maximum of all these minimum
+		if (MinDist > HausDist)
+			HausDist = MinDist;
+	}
+// 	return the MinMax, to have the Hausdorff distance
+// 	it just remains to take the max between the couple i,j and j,i
+		return sqrt(HausDist);
+}
 
 
 //Compute the MaxMin between two fibers
@@ -454,54 +465,54 @@ double FVDistributionGUI::ComputeMeanDistance(int SourceId,int NbTargetPoints,vt
 	return MeanDist;
 }
 
-// //Compute the MaxMin between two fibers
-// double FVDistributionGUI::ComputeMeanDistance(int NbSourcePoints,vtkIdType* SourceIds,int NbTargetPoints,vtkIdType* TargetIds)
-// {
-// 	double x,y,z;
-// 	double xs,ys,zs;
-// 	double xt,yt,zt;
-// 	
-// 	double MeanDist, Distance, MinDist, TotalDist = 0;
-// 	
-// 	vtkSmartPointer<vtkPolyData> PolyData;
-// 	PolyData=m_Display->GetOriginalPolyData();
-// 	vtkPoints* Points=PolyData->GetPoints();
-// 	for (unsigned int i=0;i<NbSourcePoints;i++)
-// 	{
-// 		double SourcePoint[3]={0,0,0};
-// 		Points->GetPoint(SourceIds[i],SourcePoint);
-// 		MinDist = 999999999;
-// 		//For each point of the target fiber
-// 		xs=SourcePoint[0];
-// 		ys=SourcePoint[1];
-// 		zs=SourcePoint[2];
-// 		
-// 		for (unsigned int j=0;j<NbTargetPoints;j++)
-// 		{
-// 			//calculate distance between the two points
-// 			double TargetPoint[3]={0,0,0};
-// 			Points->GetPoint(TargetIds[j],TargetPoint);
-// 			xt = TargetPoint[0];
-// 			yt = TargetPoint[1];
-// 			zt = TargetPoint[2];
-// 
-// 			x = (xs - xt);
-// 			y = (ys - yt);
-// 			z = (zs - zt);
-// 			Distance = (x*x+y*y+z*z);
-// 			//Keep the minimum distance of the distances between the whole points
-// 			//of the target fiber and one point of the source fiber
-// 			if (Distance<MinDist)
-// 				MinDist = Distance;
-// 		}
-// 		//Finaly, sum all min
-// 		TotalDist += MinDist;
-// 	}
-// 	MeanDist = TotalDist/NbSourcePoints;
-// 	//return the Meanmin to have the Mean distance
-// 	//it just remains to take the mean between the couple i,j end j,i
-// 	return sqrt(MeanDist);
-// }
+//Compute the MaxMin between two fibers
+double FVDistributionGUI::ComputeMeanDistance(int NbSourcePoints,vtkIdType* SourceIds,int NbTargetPoints,vtkIdType* TargetIds)
+{
+	double x,y,z;
+	double xs,ys,zs;
+	double xt,yt,zt;
+	
+	double MeanDist, Distance, MinDist, TotalDist = 0;
+	
+	vtkSmartPointer<vtkPolyData> PolyData;
+	PolyData=m_Display->GetOriginalPolyData();
+	vtkPoints* Points=PolyData->GetPoints();
+	for (unsigned int i=0;i<NbSourcePoints;i++)
+	{
+		double SourcePoint[3]={0,0,0};
+		Points->GetPoint(SourceIds[i],SourcePoint);
+		MinDist = 999999999;
+		//For each point of the target fiber
+		xs=SourcePoint[0];
+		ys=SourcePoint[1];
+		zs=SourcePoint[2];
+		
+		for (unsigned int j=0;j<NbTargetPoints;j++)
+		{
+			//calculate distance between the two points
+			double TargetPoint[3]={0,0,0};
+			Points->GetPoint(TargetIds[j],TargetPoint);
+			xt = TargetPoint[0];
+			yt = TargetPoint[1];
+			zt = TargetPoint[2];
+
+			x = (xs - xt);
+			y = (ys - yt);
+			z = (zs - zt);
+			Distance = (x*x+y*y+z*z);
+			//Keep the minimum distance of the distances between the whole points
+			//of the target fiber and one point of the source fiber
+			if (Distance<MinDist)
+				MinDist = Distance;
+		}
+		//Finaly, sum all min
+		TotalDist += MinDist;
+	}
+	MeanDist = TotalDist/NbSourcePoints;
+	//return the Meanmin to have the Mean distance
+	//it just remains to take the mean between the couple i,j end j,i
+	return sqrt(MeanDist);
+}
 
 void FVDistributionGUI::UndoAction()
 {

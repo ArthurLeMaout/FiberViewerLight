@@ -17,13 +17,36 @@
 			<channel>input</channel>
 		</geometry>
 		
-		<geometry type = "fiberbundle">
+		<string>
 			<name>output</name>
 			<longflag>output</longflag>
 			<flag>o</flag>
-			<description>VTK Output File</description>
+			<description>Output Folder</description>
 			<label>output</label>
 			<channel>output</channel>
-		</geometry>
+		</string>
+		
+		<boolean>
+			<name>nogui</name>
+			<longflag>nogui</longflag>
+			<description>If this option is used, you will use the command line, DEFAULT=false</description>
+			<label>nogui</label>
+			<default>false</default>
+		</boolean>
+		
+		<boolean>
+			<name>use_danielsson_transform</name>
+			<longflag>use_danielsson_transform</longflag>
+			<description>If this option is used, computation will use Danielsson Transformation to calculate distances</description>
+			<label>use_danielsson_transform</label>
+			<default>false</default>
+		</boolean>
+		
+		<string-vector>
+			<name>process_list</name>
+			<longflag>process_list</longflag>
+			<description>List of methods that will be computed and which distance tables will be saved</description>
+			<label>List of processes used for computation</label>
+		</string-vector>
 	</parameters>	
 </executable>

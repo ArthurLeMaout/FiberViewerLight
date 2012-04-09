@@ -38,19 +38,21 @@ class FVDistributionGUI : public FVPanelGUI
 		FVDistributionGUI(QWidget* Parent, FiberDisplay* Display);
 		void ClearHist();
 		void InitDistance(int NbFibers);
-		void SetMethod(std::string Sender);
+		void SetMethod(std::string Sender, bool Type=false);
 		std::vector<int> GetMark(){return m_Mark;}
 		void ApplyGravity(int NbFibers);
-		void ApplyHausdorffMean(std::string Method);
+		void ApplyHausdorffMean(std::string Method, bool Type=false);
 		void GenerateClasse(std::vector<std::vector<double> > Distance, double Threshold);
 		int GetNumberOfClasse();
 		void ComputeCOM();
 		double ComputeGravDist(int source,int target);
 		double ComputeHausDist(int SourceId,int NbTargetPoints,vtkIdType* TargetIds);
-// 		double ComputeHausDist(int NbSourcePoints,vtkIdType* SourceIds,int NbTargetPoints,vtkIdType* TargetIds);
-// 		double ComputeMeanDistance(int NbSourcePoints,vtkIdType* SourceIds,int NbTargetPoints,vtkIdType* TargetIds);
+		double ComputeHausDist(int NbSourcePoints,vtkIdType* SourceIds,int NbTargetPoints,vtkIdType* TargetIds);
+		double ComputeMeanDistance(int NbSourcePoints,vtkIdType* SourceIds,int NbTargetPoints,vtkIdType* TargetIds);
 		double ComputeMeanDistance(int SourceId,int NbTargetPoints,vtkIdType* TargetIds);
 		double GetMaxDistance();
+		std::vector<std::vector<double> > GetDistanceTable(){return m_Distance;}
+		void SetDistanceTable(std::vector<std::vector<double> > Distance){m_Distance=Distance;}
 		
 	protected slots:
 		void NextAction();
@@ -76,6 +78,7 @@ class FVDistributionGUI : public FVPanelGUI
 		std::vector<std::vector<double> >m_Com;
 		std::vector<int> m_Mark;
 		std::vector<std::vector<double> >m_Distance;
+		bool m_NoGUI;
 		
 };
 

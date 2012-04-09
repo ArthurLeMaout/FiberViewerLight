@@ -3,13 +3,13 @@
 PlanSetting::PlanSetting(QWidget* Parent, FiberDisplay* Display) : QWidget(Parent)
 {
 	m_Display=Display;
-	m_PB_UpdatePlan=new QPushButton("Update", this);
+	m_PB_UpdatePlan=new QPushButton("Update 3D", this);
 	m_PB_UpdatePlan->setGeometry(23,70,127,20);
-	m_PB_GetParam=new QPushButton("Get Param", this);
+	m_PB_GetParam=new QPushButton("Get 3D", this);
 	m_PB_GetParam->setGeometry(155,70,127,20);
-	m_PB_SavePlan=new QPushButton("Save Plan", this);
+	m_PB_SavePlan=new QPushButton("Save and Update", this);
 	m_PB_SavePlan->setGeometry(23,93,127,20);
-	m_PB_LoadPlan=new QPushButton("Load Plan", this);
+	m_PB_LoadPlan=new QPushButton("Load and Get", this);
 	m_PB_LoadPlan->setGeometry(155,93,127,20);
 	m_L_X=new QLabel("X",this);
 	m_L_X->setGeometry(108,0,16,17);
@@ -108,7 +108,6 @@ void PlanSetting::LoadPlan()
 			iss.str(Buffer.substr(17,Buffer.size()-17));
 			
 			iss>>value;
-			std::cout<<iss.str()<<" "<<value<<std::endl;
 			oss<<value;
 			m_LE_XOrigin->setText(oss.str().c_str());
 			oss.str("");
