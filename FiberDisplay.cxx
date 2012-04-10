@@ -191,6 +191,11 @@ void FiberDisplay::SetOriginalPolyData(vtkSmartPointer<vtkPolyData> PolyData)
 	m_OriginalPolyData->DeepCopy(PolyData);
 	m_OriginalPolyData->BuildCells();
 	InitAlphas();
+	InitBounds();
+	m_Spacing[0]=1;
+	m_Spacing[1]=1;
+	m_Spacing[2]=1;
+	InitDTVector();
 }
 
 	//Set Mapper's LUT Color Map

@@ -48,5 +48,12 @@
 			<description>List of methods that will be computed and which distance tables will be saved</description>
 			<label>List of processes used for computation</label>
 		</string-vector>
+		
+		<integer-vector>
+			<name>voxels_size</name>
+			<longflag>voxels_size</longflag>
+			<description>Describe the image size for the Danielsson Transformation in voxels (X,Y,Z)</description>
+			<label>Image size in voxels</label>
+		</integer-vector>
 	</parameters>	
 </executable>

@@ -103,7 +103,10 @@ void FVDistributionGUI::SetMethod(std::string Sender, bool Type)
 		ApplyHausdorffMean("Hausdorff", Type);
 	else if(m_Sender=="Mean")
 		ApplyHausdorffMean("Mean", Type);
-	
+}
+
+void FVDistributionGUI::SetMaxDistance()
+{
 	int Max=(int)GetMaxDistance();
 	std::ostringstream text;
 	text<<Max;

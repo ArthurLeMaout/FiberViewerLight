@@ -337,10 +337,14 @@ void FiberViewerLightGUI::UpdateDisplayedLabel()
 void FiberViewerLightGUI::UpdateSpacing()
 {
 	double Spacing[3], Bounds[6];
+	int Voxels[3];
+	Voxels[0]=atoi(m_LE_NbVoxelX->text().toStdString().c_str());
+	Voxels[1]=atoi(m_LE_NbVoxelY->text().toStdString().c_str());
+	Voxels[2]=atoi(m_LE_NbVoxelZ->text().toStdString().c_str());
 	m_Display->GetBounds(Bounds);
-	Spacing[0]=ceil(Bounds[1]-Bounds[0]+1)/atoi(m_LE_NbVoxelX->text().toStdString().c_str());
-	Spacing[1]=ceil(Bounds[3]-Bounds[2]+1)/atoi(m_LE_NbVoxelY->text().toStdString().c_str());
-	Spacing[2]=ceil(Bounds[5]-Bounds[4]+1)/atoi(m_LE_NbVoxelZ->text().toStdString().c_str());
+	Spacing[0]=ceil(Bounds[1]-Bounds[0]+1)/Voxels[0];
+	Spacing[1]=ceil(Bounds[3]-Bounds[2]+1)/Voxels[1];
+	Spacing[2]=ceil(Bounds[5]-Bounds[4]+1)/Voxels[2];
 	m_Display->SetSpacing(Spacing);
 }
 
@@ -704,6 +708,7 @@ void FiberViewerLightGUI::OpenDistributionPanel()
 				}
 			}
 			m_GB_ActionPanel->hide();
+			m_DistributionGUI->SetMaxDistance();
 			m_GB_DistributionPanel->show();
 			m_ProgressBar->setValue(0);
 		}
@@ -930,12 +935,18 @@ bool FiberViewerLightGUI::LoadDistanceTable(std::string Process)
 	return true;
 }
 
-bool FiberViewerLightGUI::ProcessWithoutGUI(std::string Input, std::string OutputFolder, std::vector<std::string> ProcessList, bool DT)
+bool FiberViewerLightGUI::ProcessWithoutGUI(std::string Input, std::string OutputFolder, std::vector<std::string> ProcessList, bool DT, std::vector<int> Voxels)
 {
+	double Spacing[3], Bounds[6];
 	m_VtkFileName=Input;
 	m_OutputFolder=OutputFolder;
 	vtkSmartPointer<vtkPolyData> PolyData=LoadVTK(Input);
 	m_Display->SetOriginalPolyData(PolyData);
+	m_Display->GetBounds(Bounds);
+	Spacing[0]=ceil(Bounds[1]-Bounds[0]+1)/Voxels[0];
+	Spacing[1]=ceil(Bounds[3]-Bounds[2]+1)/Voxels[1];
+	Spacing[2]=ceil(Bounds[5]-Bounds[4]+1)/Voxels[2];
+	m_Display->SetSpacing(Spacing);
 	for(int i=0; i<ProcessList.size(); i++)
 	{
 		if(ProcessList[i]=="Gravity")

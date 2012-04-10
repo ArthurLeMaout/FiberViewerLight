@@ -53,6 +53,7 @@ class FVDistributionGUI : public FVPanelGUI
 		double GetMaxDistance();
 		std::vector<std::vector<double> > GetDistanceTable(){return m_Distance;}
 		void SetDistanceTable(std::vector<std::vector<double> > Distance){m_Distance=Distance;}
+		void SetMaxDistance();
 		
 	protected slots:
 		void NextAction();
