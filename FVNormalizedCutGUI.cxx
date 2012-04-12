@@ -78,8 +78,8 @@ void FVNormCutGUI::ApplyWeight(bool Type)
 					double MeanVal = (x1 + x2) / 2;
 					if(MeanVal!=0)
 					{
-						m_Weight[RelevantSourceFiberCount][RelevantTargetFiberCount] = 1/MeanVal;
-						m_Weight[RelevantTargetFiberCount][RelevantSourceFiberCount] = 1/MeanVal;
+						m_Weight[RelevantSourceFiberCount][RelevantTargetFiberCount] = 1/(MeanVal*m_Display->GetSpacing());
+						m_Weight[RelevantTargetFiberCount][RelevantSourceFiberCount] = 1/(MeanVal*m_Display->GetSpacing());
 					}
 					else
 					{

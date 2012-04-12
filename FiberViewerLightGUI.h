@@ -52,7 +52,7 @@ class FiberViewerLightGUI: public QWidget
 		vtkSmartPointer<vtkPolyData> LoadVTK(std::string FileName);
 		void SetAtLastAlphas();
 		int GetNbFiberDisplayed();
-		bool ProcessWithoutGUI(std::string Input, std::string OutputFolder, std::vector<std::string> ProcessList, bool DT, std::vector<int> Voxels);
+		bool ProcessWithoutGUI(std::string Input, std::string OutputFolder, std::vector<std::string> ProcessList, bool DT, int Voxels);
 		bool GetNoGUI(){return m_NoGUI;}
 		
 	protected slots:

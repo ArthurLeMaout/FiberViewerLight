@@ -186,8 +186,8 @@ void FVDistributionGUI::ApplyHausdorffMean(std::string Method, bool Type)
 						}
 						Max = (x1 + x2) / 2;
 					}
-					m_Distance[RelevantSourceFiberCount][RelevantTargetFiberCount] =  Max;
-					m_Distance[RelevantTargetFiberCount][RelevantSourceFiberCount] =  Max;
+					m_Distance[RelevantSourceFiberCount][RelevantTargetFiberCount] =  Max*m_Display->GetSpacing();
+					m_Distance[RelevantTargetFiberCount][RelevantSourceFiberCount] =  Max*m_Display->GetSpacing();
 					CountProgress++;
 					RelevantTargetFiberCount++;
 					emit Progress(CountProgress*200.0/(double)(NbFibers*NbFibers));

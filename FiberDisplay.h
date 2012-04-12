@@ -57,14 +57,14 @@ class FiberDisplay: public QWidget
 		std::vector<int> GetLastAlpha(AlphasType Type);
 		int GetAlphasSize(AlphasType Type);
 		void GetFiberColor(double coef, double color[]);
-		void GetSpacing(double[]);
+		double GetSpacing(){return m_Spacing;}
 		RealImageType::Pointer GetDTVector(int Id);
 		void GetBounds(double[]);
 		
 		void SetOriginalPolyData(vtkSmartPointer<vtkPolyData> PolyData);
 		void SetLookupTable(vtkSmartPointer<vtkLookupTable> RedMap);
 		void SetLastAlpha(std::vector<int> Alpha, AlphasType Type);
-		void SetSpacing(double Spacing[]);
+		void SetSpacing(double Spacing);
 		
 		void ClearAlphas(AlphasType Type);
 		void PushBackAlpha(std::vector<int> Alpha, AlphasType Type);
@@ -96,7 +96,7 @@ class FiberDisplay: public QWidget
 		std::vector<std::vector<int> > m_PreviousAlphas;
 		std::vector<std::vector<int> > m_NextAlphas;
 		int m_NbFibersDisplayed;
-		double m_Spacing[3];
+		double m_Spacing;
 		double m_Bounds[6];
 		std::vector<int> m_DisplayedId;
 		std::vector<RealImageType::Pointer> m_DTVector;

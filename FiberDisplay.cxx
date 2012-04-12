@@ -153,13 +153,6 @@ void FiberDisplay::GetFiberColor(double coef, double color[])
 		color[i]/=255.0;
 }
 
-void FiberDisplay::GetSpacing(double Spacing[])
-{
-	Spacing[0]=m_Spacing[0];
-	Spacing[1]=m_Spacing[1];
-	Spacing[2]=m_Spacing[2];
-}
-
 RealImageType::Pointer FiberDisplay::GetDTVector(int Id)
 {
 	return m_DTVector[Id];
@@ -175,14 +168,12 @@ void FiberDisplay::GetBounds(double Bounds[])
 	Bounds[5]=m_Bounds[5];
 }
 
-void FiberDisplay::SetSpacing(double Spacing[])
+void FiberDisplay::SetSpacing(double Spacing)
 {
-	if(Spacing[0]!=m_Spacing[0] || Spacing[1]!=m_Spacing[1] || Spacing[2]!=m_Spacing[2])
+	if(Spacing!=m_Spacing)
 	{
 		InitDTVector();
-		m_Spacing[0]=Spacing[0];
-		m_Spacing[1]=Spacing[1];
-		m_Spacing[2]=Spacing[2];
+		m_Spacing=Spacing;
 	}
 }
 
@@ -192,9 +183,7 @@ void FiberDisplay::SetOriginalPolyData(vtkSmartPointer<vtkPolyData> PolyData)
 	m_OriginalPolyData->BuildCells();
 	InitAlphas();
 	InitBounds();
-	m_Spacing[0]=1;
-	m_Spacing[1]=1;
-	m_Spacing[2]=1;
+	m_Spacing=1;
 	InitDTVector();
 }
 
@@ -383,9 +372,7 @@ void FiberDisplay::StartRenderer(vtkSmartPointer<vtkPolyData> PolyData)
 	{
 		InitBounds();
 		InitPlan();
-		m_Spacing[0]=1;
-		m_Spacing[1]=1;
-		m_Spacing[2]=1;
+		m_Spacing=1;
 		
 		//Set mapper's input
 		vtkSmartPointer<vtkPolyDataMapper> PolyDataMapper=vtkSmartPointer<vtkPolyDataMapper>::New();
@@ -451,19 +438,22 @@ void FiberDisplay::UpdateCells()
 IntImageType::Pointer FiberDisplay::Voxelize(int Id)
 {
 	IntImageType::Pointer LabelImage=IntImageType::New();
-	double Origin[3];
-	LabelImage->SetSpacing(m_Spacing);
+	double Origin[3], Spacing[3];
+	Spacing[0]=m_Spacing;
+	Spacing[1]=m_Spacing;
+	Spacing[2]=m_Spacing;
+	LabelImage->SetSpacing(Spacing);
 	
 	Origin[0]=m_Bounds[0];
 	Origin[1]=m_Bounds[2];
 	Origin[2]=m_Bounds[4];
 	LabelImage->SetOrigin(Origin);
-	//LabelImage->SetDirection(tensorreader->GetOutput()->GetDirection());
+	
 	IntImageType::RegionType Region;
 	IntImageType::SizeType RegionSize;
-	RegionSize[0]=ceil(m_Bounds[1]-m_Bounds[0]+1)/m_Spacing[0];
-	RegionSize[1]=ceil(m_Bounds[3]-m_Bounds[2]+1)/m_Spacing[1];
-	RegionSize[2]=ceil(m_Bounds[5]-m_Bounds[4]+1)/m_Spacing[2];
+	RegionSize[0]=ceil(m_Bounds[1]-m_Bounds[0]+1)/m_Spacing;
+	RegionSize[1]=ceil(m_Bounds[3]-m_Bounds[2]+1)/m_Spacing;
+	RegionSize[2]=ceil(m_Bounds[5]-m_Bounds[4]+1)/m_Spacing;
 	
 	IntImageType::IndexType RegionIndex;
 	RegionIndex[0]=0;

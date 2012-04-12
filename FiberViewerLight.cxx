@@ -24,8 +24,6 @@ int main(int argc, char* argv[])
 	QApplication app(argc, argv);
 	if(!nogui)
 	{
-		
-		
 		FiberViewerLightGUI* GUIWin=new FiberViewerLightGUI(nogui,input,output);
 		GUIWin->show();
 		
@@ -35,7 +33,7 @@ int main(int argc, char* argv[])
 	{
 		FiberViewerLightGUI* GUIWin=new FiberViewerLightGUI(nogui);
 		if(input!="" && process_list.size()>0)
-			GUIWin->ProcessWithoutGUI(input,output,process_list,use_danielsson_transform,voxels_size);
+			GUIWin->ProcessWithoutGUI(input,output,process_list,use_danielsson_transform, x_voxels);
 		else
 			std::cout<<"One or more required parameters are missing."<<std::endl;
 		return 0;

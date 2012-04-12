@@ -271,14 +271,10 @@ void FiberViewerLightGUI::EnableVoxels()
 	if(sender()==m_RB_DT)
 	{
 		m_LE_NbVoxelX->setEnabled(true);
-		m_LE_NbVoxelY->setEnabled(true);
-		m_LE_NbVoxelZ->setEnabled(true);
 	}
 	else
 	{
 		m_LE_NbVoxelX->setEnabled(false);
-		m_LE_NbVoxelY->setEnabled(false);
-		m_LE_NbVoxelZ->setEnabled(false);
 	}
 }
 
@@ -294,8 +290,6 @@ void FiberViewerLightGUI::EnableProcessingOption()
 		m_RB_DT->setEnabled(false);
 		m_RB_Classic->setEnabled(false);
 		m_LE_NbVoxelX->setEnabled(false);
-		m_LE_NbVoxelY->setEnabled(false);
-		m_LE_NbVoxelZ->setEnabled(false);
 	}
 }
 
@@ -336,16 +330,20 @@ void FiberViewerLightGUI::UpdateDisplayedLabel()
 
 void FiberViewerLightGUI::UpdateSpacing()
 {
-	double Spacing[3], Bounds[6];
-	int Voxels[3];
-	Voxels[0]=atoi(m_LE_NbVoxelX->text().toStdString().c_str());
-	Voxels[1]=atoi(m_LE_NbVoxelY->text().toStdString().c_str());
-	Voxels[2]=atoi(m_LE_NbVoxelZ->text().toStdString().c_str());
+	double Spacing, Bounds[6];
+	int Voxels;
+	Voxels=atoi(m_LE_NbVoxelX->text().toStdString().c_str());
 	m_Display->GetBounds(Bounds);
-	Spacing[0]=ceil(Bounds[1]-Bounds[0]+1)/Voxels[0];
-	Spacing[1]=ceil(Bounds[3]-Bounds[2]+1)/Voxels[1];
-	Spacing[2]=ceil(Bounds[5]-Bounds[4]+1)/Voxels[2];
+	Spacing=ceil(Bounds[1]-Bounds[0]+1)/Voxels;
 	m_Display->SetSpacing(Spacing);
+	
+	std::ostringstream oss;
+	oss<<int(ceil(Bounds[3]-Bounds[2]+1)/Spacing);
+	m_LE_NbVoxelY->setText(oss.str().c_str());
+	
+	oss.str("");
+	oss<<int(ceil(Bounds[5]-Bounds[4]+1)/Spacing);
+	m_LE_NbVoxelZ->setText(oss.str().c_str());
 }
 
 /********************************************************************************
@@ -657,9 +655,13 @@ void FiberViewerLightGUI::CloseLengthPanel(FVPanelGUI::ExitSignal Type)
 
 void FiberViewerLightGUI::OpenDistributionPanel()
 {
-	
 	if(m_LE_VTKInput->text()!="")
 	{
+		if(m_LE_OutputFolder->text()=="")
+		{
+			QMessageBox::warning(this, "Warning", "No output folder specifed");
+			BrowserOutput();
+		}
 		if(m_LE_OutputFolder->text()!="")
 		{
 			bool LoadSuccess=true;
@@ -712,8 +714,6 @@ void FiberViewerLightGUI::OpenDistributionPanel()
 			m_GB_DistributionPanel->show();
 			m_ProgressBar->setValue(0);
 		}
-		else
-			QMessageBox::warning(this, "Warning", "No output folder specifed");
 	}
 	else
 		QMessageBox::warning(this, "Warning", "No Fiber selected!");
@@ -723,22 +723,38 @@ void FiberViewerLightGUI::OpenNormCutPanel()
 {
 	if(m_LE_VTKInput->text()!="")
 	{
-		if(m_RB_Save->isChecked())
+		if(m_LE_OutputFolder->text()=="")
 		{
-			if(m_RB_DT->isChecked())
+			QMessageBox::warning(this, "Warning", "No output folder specifed");
+			BrowserOutput();
+		}
+		if(m_LE_OutputFolder->text()!="")
+		{
+			bool LoadSuccess=true;
+			if(m_RB_Save->isChecked())
 			{
-				m_Display->UpdateDT();
-				m_NormCutGUI->ApplyWeight(true);
+				if(m_RB_DT->isChecked())
+				{
+					m_Display->UpdateDT();
+					m_NormCutGUI->ApplyWeight(true);
+				}
+				else
+					m_NormCutGUI->ApplyWeight();
+				SaveDistanceTable("NormCut");
 			}
 			else
-				m_NormCutGUI->ApplyWeight();
-			SaveDistanceTable("NormCut");
+			{
+				LoadSuccess=LoadDistanceTable("NormCut");
+				if(!LoadSuccess)
+				{
+					QMessageBox::warning(this, "Error", "Error loading distance table");
+					return;
+				}
+			}
+			m_GB_ActionPanel->hide();
+			m_GB_NormCutPanel->show();
+			m_ProgressBar->setValue(0);
 		}
-		else
-			LoadDistanceTable("NormCut");
-		m_GB_ActionPanel->hide();
-		m_GB_NormCutPanel->show();
-		m_ProgressBar->setValue(0);
 	}
 	else
 		QMessageBox::warning(this, "Warning", "No Fiber selected!");
@@ -935,17 +951,15 @@ bool FiberViewerLightGUI::LoadDistanceTable(std::string Process)
 	return true;
 }
 
-bool FiberViewerLightGUI::ProcessWithoutGUI(std::string Input, std::string OutputFolder, std::vector<std::string> ProcessList, bool DT, std::vector<int> Voxels)
+bool FiberViewerLightGUI::ProcessWithoutGUI(std::string Input, std::string OutputFolder, std::vector<std::string> ProcessList, bool DT, int Voxels)
 {
-	double Spacing[3], Bounds[6];
+	double Spacing, Bounds[6];
 	m_VtkFileName=Input;
 	m_OutputFolder=OutputFolder;
 	vtkSmartPointer<vtkPolyData> PolyData=LoadVTK(Input);
 	m_Display->SetOriginalPolyData(PolyData);
 	m_Display->GetBounds(Bounds);
-	Spacing[0]=ceil(Bounds[1]-Bounds[0]+1)/Voxels[0];
-	Spacing[1]=ceil(Bounds[3]-Bounds[2]+1)/Voxels[1];
-	Spacing[2]=ceil(Bounds[5]-Bounds[4]+1)/Voxels[2];
+	Spacing=ceil(Bounds[1]-Bounds[0]+1)/Voxels;
 	m_Display->SetSpacing(Spacing);
 	for(int i=0; i<ProcessList.size(); i++)
 	{
