@@ -3,6 +3,9 @@
 FVDistributionGUI::FVDistributionGUI(QWidget* Parent, FiberDisplay* Display) : FVPanelGUI(Parent,Display)
 {
 	m_HistPlot=new QwtPlot;
+	m_HistPlot->setMinimumSize(300,300);
+	m_HistPlot->setAxisTitle(QwtPlot::yLeft,"Frequency");
+	m_HistPlot->setAxisTitle(QwtPlot::xBottom,"Distance Threshold (mm)");
 	m_Hist=new QwtPlotHistogram;
 	m_Hist->setPen(QPen(Qt::white,0));
 	m_Hist->setBrush(QColor(51,0,153));
@@ -21,7 +24,7 @@ FVDistributionGUI::FVDistributionGUI(QWidget* Parent, FiberDisplay* Display) : F
 	m_L_Min=new QLabel("Min", this);
 	m_L_NbBars=new QLabel("NbBars", this);
 	m_L_Max=new QLabel("Max", this);
-	m_L_Threshold=new QLabel("Threshold", this);
+	m_L_Threshold=new QLabel("Threshold (mm)", this);
 	m_LE_Min=new QLineEdit(this);
 	m_LE_Min->setText("0");
 	m_LE_NbBars=new QLineEdit(this);
@@ -98,11 +101,20 @@ void FVDistributionGUI::SetMethod(std::string Sender, bool Type)
 	int NbFibers=m_Display->GetNbModifiedFibers();
 	InitDistance(NbFibers);
 	if(m_Sender=="Gravity")
+	{
+		m_HistPlot->setTitle("Gravity");
 		ApplyGravity(NbFibers);
+	}
 	else if(m_Sender=="Hausdorff")
+	{
+		m_HistPlot->setTitle("Hausdorff");
 		ApplyHausdorffMean("Hausdorff", Type);
+	}
 	else if(m_Sender=="Mean")
+	{
+		m_HistPlot->setTitle("Mean");
 		ApplyHausdorffMean("Mean", Type);
+	}
 }
 
 void FVDistributionGUI::SetMaxDistance()

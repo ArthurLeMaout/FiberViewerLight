@@ -76,24 +76,24 @@ void FiberViewerLightGUI::InitWidgets()
 		m_PlanSetting->hide();
 		
 		m_GB_ActionPanel=new QGroupBox("Fiber Viewer Light 1.0");
-		m_GB_ActionPanel->setMinimumSize(300,585);
-		m_GB_ActionPanel->setMaximumSize(300,585);
+		m_GB_ActionPanel->setMinimumSize(350,585);
+		m_GB_ActionPanel->setMaximumSize(350,585);
 		
 		m_GB_LengthPanel=new QGroupBox("Length");
-		m_GB_LengthPanel->setMinimumSize(300,430);
-		m_GB_LengthPanel->setMaximumSize(300,430);
+		m_GB_LengthPanel->setMinimumSize(350,480);
+		m_GB_LengthPanel->setMaximumSize(350,480);
 		m_GB_LengthPanel->hide();
 		m_GB_DistributionPanel=new QGroupBox("Distribution");
-		m_GB_DistributionPanel->setMinimumSize(300,430);
-		m_GB_DistributionPanel->setMaximumSize(300,430);
+		m_GB_DistributionPanel->setMinimumSize(350,550);
+		m_GB_DistributionPanel->setMaximumSize(350,550);
 		m_GB_DistributionPanel->hide();
 		m_GB_DisplayClassPanel=new QGroupBox("Display Class");
-		m_GB_DisplayClassPanel->setMinimumSize(300,430);
-		m_GB_DisplayClassPanel->setMaximumSize(300,430);
+		m_GB_DisplayClassPanel->setMinimumSize(350,430);
+		m_GB_DisplayClassPanel->setMaximumSize(350,430);
 		m_GB_DisplayClassPanel->hide();
 		m_GB_NormCutPanel=new QGroupBox("Normalized Cut");
-		m_GB_NormCutPanel->setMinimumSize(300,430);
-		m_GB_NormCutPanel->setMaximumSize(300,430);
+		m_GB_NormCutPanel->setMinimumSize(350,430);
+		m_GB_NormCutPanel->setMaximumSize(350,430);
 		m_GB_NormCutPanel->hide();
 			
 		m_ProgressBar=new QProgressBar;

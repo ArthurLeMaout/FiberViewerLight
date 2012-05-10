@@ -3,6 +3,9 @@
 FVLengthGUI::FVLengthGUI(QWidget* Parent, FiberDisplay* Display) : FVPanelGUI(Parent,Display)
 {
 	m_HistPlot=new QwtPlot;
+	m_HistPlot->setMinimumSize(300,250);
+	m_HistPlot->setAxisTitle(QwtPlot::yLeft, "Frequency");
+	m_HistPlot->setAxisTitle(QwtPlot::xBottom, "Length (mm)");
 	m_Hist=new QwtPlotHistogram;
 	m_Hist->setPen(QPen(Qt::white,0));
 	m_Hist->setBrush(QColor(51,0,153));
@@ -27,8 +30,8 @@ FVLengthGUI::FVLengthGUI(QWidget* Parent, FiberDisplay* Display) : FVPanelGUI(Pa
 	m_SB_UpperTh=new QSpinBox(this);
 	m_SB_UpperTh->setSingleStep(1);
 	m_SB_UpperTh->setRange(0,1000);
-	m_L_LowerTh=new QLabel("Lower Threshold", this);
-	m_L_UpperTh=new QLabel("Upper Threshold", this);
+	m_L_LowerTh=new QLabel("Lower Threshold (mm)", this);
+	m_L_UpperTh=new QLabel("Upper Threshold (mm)", this);
 	m_PB_LengthComputation=new QPushButton("Apply Threshold",this);
 	
 	QGridLayout* GL_LengthFilter=new QGridLayout;
