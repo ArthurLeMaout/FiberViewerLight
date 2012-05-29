@@ -44,31 +44,35 @@ class FiberDisplay: public QWidget
 	Q_OBJECT
 	
 	public:
-		enum AlphasType{Next,Previous};
+		enum Direction{Next,Previous};
 		
 		FiberDisplay(QWidget* parent);
 		void InitRenderer();
 		void InitAlphas();
+		void InitPointsCut();
 		void InitDTVector();
 		
 		vtkSmartPointer<vtkPolyData> GetOriginalPolyData();
 		vtkSmartPointer<vtkRenderer> GetRenderer();
 		vtkSmartPointer<vtkActor> GetActor();
-		std::vector<int> GetLastAlpha(AlphasType Type);
-		int GetAlphasSize(AlphasType Type);
+		std::vector<int> GetLastAlpha(Direction Type);
+		std::vector<int> GetPointsCut();
+		int GetAlphasSize(Direction Type);
 		void GetFiberColor(double coef, double color[]);
 		double GetSpacing(){return m_Spacing;}
 		RealImageType::Pointer GetDTVector(int Id);
 		void GetBounds(double[]);
+		int GetNumberOfPointsCut(int,int);
 		
 		void SetOriginalPolyData(vtkSmartPointer<vtkPolyData> PolyData);
 		void SetLookupTable(vtkSmartPointer<vtkLookupTable> RedMap);
-		void SetLastAlpha(std::vector<int> Alpha, AlphasType Type);
+		void SetLastAlpha(std::vector<int> Alpha, Direction Type);
+		void SetPointsCut(std::vector<int> PointsCut);
 		void SetSpacing(double Spacing);
 		
-		void ClearAlphas(AlphasType Type);
-		void PushBackAlpha(std::vector<int> Alpha, AlphasType Type);
-		void PopBackAlpha(AlphasType Type);
+		void ClearAlphas(Direction Type);
+		void PushBackAlpha(std::vector<int> Alpha, Direction Type);
+		void PopBackAlpha(Direction Type);
 		int GetNbModifiedFibers();
 		std::vector<int> GenerateRandomIds();
 		void StartRenderer(vtkSmartPointer<vtkPolyData> PolyData);
@@ -78,7 +82,7 @@ class FiberDisplay: public QWidget
 		void InitBounds();
 		vtkSmartPointer<vtkImplicitPlaneWidget> GetPlan();
 		void InitPlan();
-		bool IsUnchanged();
+		bool AlphasIsUnchanged();
 		void SetNbFibersDisplayed(int value);
 		void FillDisplayedId(std::vector<int> RandomIds);
 		void UpdateDT();
@@ -95,6 +99,7 @@ class FiberDisplay: public QWidget
 		vtkSmartPointer<vtkPolyData> m_DisplayedPolyData;
 		std::vector<std::vector<int> > m_PreviousAlphas;
 		std::vector<std::vector<int> > m_NextAlphas;
+		std::vector<int> m_PointsCut;
 		int m_NbFibersDisplayed;
 		double m_Spacing;
 		double m_Bounds[6];

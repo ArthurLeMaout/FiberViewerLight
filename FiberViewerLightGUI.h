@@ -39,6 +39,7 @@
 #include "FVLengthGUI.h"
 #include "FVDistributionGUI.h"
 #include "FVNormalizedCutGUI.h"
+#include "FVCutterGUI.h"
 #include "PlanSetting.h"
 
 class FiberViewerLightGUI: public QWidget
@@ -57,17 +58,19 @@ class FiberViewerLightGUI: public QWidget
 		
 	protected slots:
 		void BrowserVTKInput();
-		void EnterVTKInput();
+		void EnterVTKInput(bool FromBrowser=false);
 		void BrowserOutput();
 		void EnterOutputFolder();
 		void SaveVTK();
 		void OpenLengthPanel();
 		void OpenDistributionPanel();
 		void OpenNormCutPanel();
+		void OpenCutterPanel();
 		void CloseLengthPanel(FVPanelGUI::ExitSignal Direction);
 		void CloseDistributionPanel(FVPanelGUI::ExitSignal Direction);
 		void CloseDisplayClass(FVPanelGUI::ExitSignal Direction);
 		void CloseNormCut(FVPanelGUI::ExitSignal Direction);
+		void CloseCutter(FVPanelGUI::ExitSignal Direction);
 		void OpenPlanSetting();
 		void UndoAction();
 		void RedoAction();
@@ -86,6 +89,7 @@ class FiberViewerLightGUI: public QWidget
 		QGroupBox* m_GB_DistributionPanel;
 		QGroupBox* m_GB_DisplayClassPanel;
 		QGroupBox* m_GB_NormCutPanel;
+		QGroupBox* m_GB_CutterPanel;
 		QLineEdit* m_LE_VTKInput;
 		QLineEdit* m_LE_OutputFolder;
 		QLineEdit* m_LE_NbVoxelX;
@@ -108,6 +112,7 @@ class FiberViewerLightGUI: public QWidget
 		QPushButton* m_PB_Hausdorff;
 		QPushButton* m_PB_Mean;
 		QPushButton* m_PB_NormCut;
+		QPushButton* m_PB_Cutter;
 		QPushButton* m_PB_Undo;
 		QPushButton* m_PB_Redo;
 		QPushButton* m_PB_SaveVTK;
@@ -130,6 +135,7 @@ class FiberViewerLightGUI: public QWidget
 		FVDistributionGUI* m_DistributionGUI;
 		FVDisplayClassGUI* m_DisplayClassGUI;
 		FVNormCutGUI* m_NormCutGUI;
+		FVCutterGUI* m_CutterGUI;
 		vtkSmartPointer<vtkLookupTable> m_RedMap;
 		FiberDisplay* m_Display;
 		PlanSetting* m_PlanSetting;

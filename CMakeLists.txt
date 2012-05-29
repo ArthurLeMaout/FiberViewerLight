@@ -68,10 +68,10 @@ INCLUDE_DIRECTORIES(
   ${FVLight_SOURCE_DIR}
 )
 
-QT4_WRAP_CPP(MOC_FILES FiberViewerLightGUI.h FVLengthGUI.h FVDistributionGUI.h FVPanelGUI.h FVDisplayClassGUI.h FVNormalizedCutGUI.h PlanSetting.h FiberDisplay.h)
+QT4_WRAP_CPP(MOC_FILES FiberViewerLightGUI.h FVLengthGUI.h FVDistributionGUI.h FVPanelGUI.h FVDisplayClassGUI.h FVCutterGUI.h FVNormalizedCutGUI.h PlanSetting.h FiberDisplay.h)
 
-SET(FVLight_source FiberViewerLight.cxx FiberViewerLightGUI.cxx FiberDisplay.cxx FVLengthGUI.cxx  FVDistributionGUI.cxx FVPanelGUI.cxx FVDisplayClassGUI.cxx FVNormalizedCutGUI.cxx PlanSetting.cxx ${MOC_FILES})
-SET(FVLight_header FiberViewerLightGUI.h FiberDisplay.h FVLengthGUI.h FVDistributionGUI.h FVPanelGUI.h FVDisplayClassGUI.h FVNormalizedCutGUI.h PlanSetting.h)
+SET(FVLight_source FiberViewerLight.cxx FiberViewerLightGUI.cxx FiberDisplay.cxx FVLengthGUI.cxx  FVDistributionGUI.cxx FVPanelGUI.cxx FVDisplayClassGUI.cxx FVNormalizedCutGUI.cxx PlanSetting.cxx FVCutterGUI.cxx ${MOC_FILES})
+SET(FVLight_header FiberViewerLightGUI.h FiberDisplay.h FVLengthGUI.h FVDistributionGUI.h FVPanelGUI.h FVDisplayClassGUI.h FVNormalizedCutGUI.h PlanSetting.h FVCutterGUI.h)
 
 # GENERATECLP(FiberViewerLight.cxx FiberViewerLight.xml)
 add_executable( FiberViewerLight ${FVLight_source} ${FVLight_header})

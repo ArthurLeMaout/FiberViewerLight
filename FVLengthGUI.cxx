@@ -68,7 +68,6 @@ void FVLengthGUI::LengthCalculation()
 	vtkIdType NumberOfPoints;
 	Points=m_Display->GetOriginalPolyData()->GetPoints();
 	Lines=m_Display->GetOriginalPolyData()->GetLines();
-	
 	Lines->InitTraversal();
 	for(unsigned int i=0; i<Alpha.size(); i++)
 	{
@@ -103,12 +102,11 @@ void FVLengthGUI::InitLengthPanel()
 {
 	LengthCalculation();		//Fill m_Length table
 	InitLengthColorMap();	//Fill m_ColorMap
-				
 	//Set default threshold values
 	m_SB_UpperTh->setValue((int)ceil(GetMaxLength()));
 	m_SB_LowerTh->setValue((int)floor(GetMinLength()));
 	
-	m_Display->PushBackAlpha(m_Display->GetLastAlpha(FiberDisplay::Previous),FiberDisplay::Previous);
+	m_Display->PushBackAlpha(m_Display->GetLastAlpha(FiberDisplay::Previous),FiberDisplay::Previous);;
 }
 	
 /********************************************************************************
@@ -243,7 +241,6 @@ void FVLengthGUI::SetFiberOpacity(vtkIdType Id, int a)
 
 void FVLengthGUI::UndoAction()
 {
-// 	m_Display->PushBackAlpha(m_Display->GetLastAlpha(FiberDisplay::Previous), FiberDisplay::Next);
 	m_Display->PopBackAlpha(FiberDisplay::Previous);
 	m_Hist->setSamples(QVector<QwtIntervalSample>());
 	m_HistPlot->replot();

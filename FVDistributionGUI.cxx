@@ -536,7 +536,6 @@ void FVDistributionGUI::UndoAction()
 
 void FVDistributionGUI::NextAction()
 {
-	
 	GenerateClasse(m_Distance, atof(m_LE_Threshold->text().toStdString().c_str()));
 	emit Exit(FVPanelGUI::Ok);
 }

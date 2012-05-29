@@ -28,10 +28,12 @@ FiberViewerLightGUI::FiberViewerLightGUI(bool nogui, std::string input, std::str
 		connect(m_PB_Hausdorff, SIGNAL(clicked()), this, SLOT(OpenDistributionPanel()));
 		connect(m_PB_Mean, SIGNAL(clicked()), this, SLOT(OpenDistributionPanel()));
 		connect(m_PB_NormCut, SIGNAL(clicked()), this, SLOT(OpenNormCutPanel()));
+		connect(m_PB_Cutter, SIGNAL(clicked()),this,SLOT(OpenCutterPanel()));
 		connect(m_LengthGUI, SIGNAL(Exit(FVPanelGUI::ExitSignal)), this, SLOT(CloseLengthPanel(FVPanelGUI::ExitSignal)));
 		connect(m_DistributionGUI, SIGNAL(Exit(FVPanelGUI::ExitSignal)), this, SLOT(CloseDistributionPanel(FVPanelGUI::ExitSignal)));
 		connect(m_DisplayClassGUI, SIGNAL(Exit(FVPanelGUI::ExitSignal)), this, SLOT(CloseDisplayClass(FVPanelGUI::ExitSignal)));
 		connect(m_NormCutGUI, SIGNAL(Exit(FVPanelGUI::ExitSignal)), this, SLOT(CloseNormCut(FVPanelGUI::ExitSignal)));
+		connect(m_CutterGUI,SIGNAL(Exit(FVPanelGUI::ExitSignal)), this, SLOT(CloseCutter(FVPanelGUI::ExitSignal)));
 		connect(m_PB_Undo, SIGNAL(clicked()), this, SLOT(UndoAction()));
 		connect(m_PB_Redo, SIGNAL(clicked()), this, SLOT(RedoAction()));
 		connect(m_PB_SaveVTK, SIGNAL(clicked()), this, SLOT(SaveVTK()));
@@ -72,12 +74,13 @@ void FiberViewerLightGUI::InitWidgets()
 	{
 		m_LengthGUI=new FVLengthGUI(this, m_Display);
 		m_DisplayClassGUI=new FVDisplayClassGUI(this,m_Display);
+		m_CutterGUI=new FVCutterGUI(this,m_Display);
 		m_PlanSetting=new PlanSetting(this, m_Display);
 		m_PlanSetting->hide();
 		
 		m_GB_ActionPanel=new QGroupBox("Fiber Viewer Light 1.0");
-		m_GB_ActionPanel->setMinimumSize(350,585);
-		m_GB_ActionPanel->setMaximumSize(350,585);
+		m_GB_ActionPanel->setMinimumSize(350,620);
+		m_GB_ActionPanel->setMaximumSize(350,620);
 		
 		m_GB_LengthPanel=new QGroupBox("Length");
 		m_GB_LengthPanel->setMinimumSize(350,480);
@@ -95,6 +98,10 @@ void FiberViewerLightGUI::InitWidgets()
 		m_GB_NormCutPanel->setMinimumSize(350,430);
 		m_GB_NormCutPanel->setMaximumSize(350,430);
 		m_GB_NormCutPanel->hide();
+		m_GB_CutterPanel=new QGroupBox("Cutter");
+		m_GB_CutterPanel->setMinimumSize(350,430);
+		m_GB_CutterPanel->setMaximumSize(350,430);
+		m_GB_CutterPanel->hide();
 			
 		m_ProgressBar=new QProgressBar;
 		m_ProgressBar->setValue(0);
@@ -136,6 +143,7 @@ void FiberViewerLightGUI::InitWidgets()
 		m_PB_Hausdorff=new QPushButton("Hausdorff",this);
 		m_PB_Mean=new QPushButton("Mean",this);
 		m_PB_NormCut=new QPushButton("Normalized Cut",this);
+		m_PB_Cutter=new QPushButton("Cutter",this);
 		m_PB_Undo=new QPushButton("Undo",this);
 		m_PB_Undo->setEnabled(false);
 		m_PB_Redo=new QPushButton("Redo",this);
@@ -212,6 +220,7 @@ void FiberViewerLightGUI::InitWidgets()
 		VL_ActionPanel->addWidget(m_PB_Hausdorff);
 		VL_ActionPanel->addWidget(m_PB_Mean);
 		VL_ActionPanel->addWidget(m_PB_NormCut);
+		VL_ActionPanel->addWidget(m_PB_Cutter);
 		VL_ActionPanel->addWidget(m_L_ProcessingOption);
 		VL_ActionPanel->addWidget(F_HLine3);
 		VL_DistanceOption->addWidget(m_RB_Save);
@@ -242,26 +251,28 @@ void FiberViewerLightGUI::InitWidgets()
 		GL_MainLayout->addWidget(m_GB_ActionPanel,0,0,Qt::AlignTop);
 	
 		m_GB_LengthPanel->setLayout(m_LengthGUI->layout());
-		GL_MainLayout->addWidget(m_GB_LengthPanel,0,1,Qt::AlignTop);
+		GL_MainLayout->addWidget(m_GB_LengthPanel,0,0,Qt::AlignTop);
 		m_GB_DistributionPanel->setLayout(m_DistributionGUI->layout());
-		GL_MainLayout->addWidget(m_GB_DistributionPanel,0,2,Qt::AlignTop);
+		GL_MainLayout->addWidget(m_GB_DistributionPanel,0,0,Qt::AlignTop);
 		m_GB_DisplayClassPanel->setLayout(m_DisplayClassGUI->layout());
-		GL_MainLayout->addWidget(m_GB_DisplayClassPanel,0,3,Qt::AlignTop);
+		GL_MainLayout->addWidget(m_GB_DisplayClassPanel,0,0,Qt::AlignTop);
 		m_GB_NormCutPanel->setLayout(m_NormCutGUI->layout());
-		GL_MainLayout->addWidget(m_GB_NormCutPanel,0,4,Qt::AlignTop);
-		
-		GL_MainLayout->addWidget(m_PlanSetting,1,0,1,5,Qt::AlignBottom);
+		GL_MainLayout->addWidget(m_GB_NormCutPanel,0,0,Qt::AlignTop);
+		m_GB_CutterPanel->setLayout(m_CutterGUI->layout());
+		GL_MainLayout->addWidget(m_GB_CutterPanel,0,0,Qt::AlignTop);
+		GL_MainLayout->addWidget(m_PlanSetting,1,0,Qt::AlignBottom);
 		GL_MainLayout->setRowStretch(1,1);
 		
 		GL_FiberInfo->addWidget(m_L_NbFiber,0,0,Qt::AlignLeft);
-		GL_FiberInfo->addWidget(m_L_NbFiberDisplayed,0,1,1,4,Qt::AlignLeft);
+		GL_FiberInfo->addWidget(m_L_NbFiberDisplayed,0,1,Qt::AlignLeft);
 		GL_FiberInfo->addWidget(m_L_PercentageDisplayed,1,0,Qt::AlignRight);
-		GL_FiberInfo->addWidget(m_S_PercentageDisplayed,1,1,1,4,Qt::AlignLeft);
+		GL_FiberInfo->addWidget(m_S_PercentageDisplayed,1,1,Qt::AlignLeft);
 		GL_FiberInfo->addWidget(m_PB_ApplyPercentage,2,0,Qt::AlignLeft);
-		GL_MainLayout->addLayout(GL_FiberInfo,2,0,2,5);
-		GL_MainLayout->addWidget(m_PB_Plane,3,5);
-		GL_MainLayout->addWidget(m_Display,0,5,3,3);
-		GL_MainLayout->setColumnStretch(6,1);
+		
+		GL_MainLayout->addLayout(GL_FiberInfo,2,0,2,1);
+		GL_MainLayout->addWidget(m_PB_Plane,3,1,Qt::AlignLeft);
+		GL_MainLayout->addWidget(m_Display,0,1,3,1);
+		GL_MainLayout->setColumnStretch(3,1);
 		setLayout(GL_MainLayout);
 	}
 }
@@ -358,15 +369,9 @@ void FiberViewerLightGUI::BrowserVTKInput()
 	QFileDialog FileDialog;
 	FileDialog.setViewMode(QFileDialog::Detail);
 	filename = FileDialog.getOpenFileName(this, "Open VTK File", "/", "VTK (*.vtk *.vtp)",&type);
-	if(filename!="")
-	{
-		m_Display->ClearAlphas(FiberDisplay::Previous);
-		m_Display->ClearAlphas(FiberDisplay::Next);
-		m_PreviousVtkFileName=m_VtkFileName;
-		m_VtkFileName=filename.toStdString();
-	}
+	
 	m_LE_VTKInput->setText(filename);
-	EnterVTKInput();
+	EnterVTKInput(true);
 	
 	QApplication::restoreOverrideCursor();	
 }
@@ -376,15 +381,18 @@ void FiberViewerLightGUI::BrowserVTKInput()
  *	the renderer and m_Length table.
  ********************************************************************************/
 
-void FiberViewerLightGUI::EnterVTKInput()
+void FiberViewerLightGUI::EnterVTKInput(bool FromBrowser)
 {
 	std::ostringstream nbfiber;
 	if(m_LE_VTKInput->text().toStdString()!="")
 	{
 		vtkSmartPointer<vtkPolyData> PolyData;
-		PolyData=LoadVTK(m_LE_VTKInput->text().toStdString());
+		m_PreviousVtkFileName=m_VtkFileName;
+		if(m_PreviousVtkFileName!=m_LE_VTKInput->text().toStdString() || FromBrowser)
+			PolyData=LoadVTK(m_LE_VTKInput->text().toStdString());
 		if(PolyData!=NULL)
 		{
+			m_VtkFileName=m_LE_VTKInput->text().toStdString();
 			InitRedMap(PolyData);
 			m_Display->InitRenderer();
 			m_Display->StartRenderer(PolyData);
@@ -459,34 +467,29 @@ void FiberViewerLightGUI::EnterOutputFolder()
 
 vtkSmartPointer<vtkPolyData> FiberViewerLightGUI::LoadVTK(std::string FileName)
 {
-	if(m_PreviousVtkFileName!=FileName)
+	std::cout<<"Reading VTK data..."<<std::endl;
+	vtkSmartPointer<vtkPolyData> PolyData;
+	if (FileName.rfind(".vtk") != std::string::npos)
 	{
-		std::cout<<"Reading VTK data..."<<std::endl;
-		vtkSmartPointer<vtkPolyData> PolyData;
-		if (FileName.rfind(".vtk") != std::string::npos)
-		{
-			vtkSmartPointer<vtkPolyDataReader> reader = vtkPolyDataReader::New();
-			reader->SetFileName(FileName.c_str());
-			PolyData=reader->GetOutput();
-			reader->Update();
-		}
-		else if (FileName.rfind(".vtp") != std::string::npos)
-		{
-			vtkSmartPointer<vtkXMLPolyDataReader> reader = vtkXMLPolyDataReader::New();
-			reader->SetFileName(FileName.c_str());
-			PolyData=reader->GetOutput();
-			reader->Update();
-		}
-		else
-		{
-			std::cout<<"Error reading VTK File. Check VTK Format."<<std::endl;
-			return NULL;
-		}
-		std::cout<<"VTK File read successfuly. "<<PolyData->GetNumberOfCells()<<" fibers read."<<std::endl;
-		return PolyData;
+		vtkSmartPointer<vtkPolyDataReader> reader = vtkPolyDataReader::New();
+		reader->SetFileName(FileName.c_str());
+		PolyData=reader->GetOutput();
+		reader->Update();
+	}
+	else if (FileName.rfind(".vtp") != std::string::npos)
+	{
+		vtkSmartPointer<vtkXMLPolyDataReader> reader = vtkXMLPolyDataReader::New();
+		reader->SetFileName(FileName.c_str());
+		PolyData=reader->GetOutput();
+		reader->Update();
 	}
 	else
+	{
+		std::cout<<"Error reading VTK File. Check VTK Format or file path."<<std::endl;
 		return NULL;
+	}
+	std::cout<<"VTK File read successfuly. "<<PolyData->GetNumberOfCells()<<" fibers read."<<std::endl;
+	return PolyData;
 }
 
 void FiberViewerLightGUI::InitRedMap(vtkPolyData* PolyData)
@@ -634,7 +637,7 @@ void FiberViewerLightGUI::CloseLengthPanel(FVPanelGUI::ExitSignal Type)
 	if(Type==FVPanelGUI::Ok)
 	{
 		m_PB_Redo->setEnabled(false);
-		if(m_Display->IsUnchanged())
+		if(m_Display->AlphasIsUnchanged())
 		{
 			if(m_Display->GetAlphasSize(FiberDisplay::Previous)>1)
 				m_PB_Undo->setEnabled(true);
@@ -760,6 +763,19 @@ void FiberViewerLightGUI::OpenNormCutPanel()
 		QMessageBox::warning(this, "Warning", "No Fiber selected!");
 }
 
+void FiberViewerLightGUI::OpenCutterPanel()
+{
+	if(m_LE_VTKInput->text()!="")
+	{
+		m_GB_ActionPanel->hide();
+		m_GB_CutterPanel->show();
+		if(!m_PlanSetting->isVisible())
+			OpenPlanSetting();
+	}
+	else
+		QMessageBox::warning(this, "Warning", "No Fiber selected!");
+}
+
 void FiberViewerLightGUI::CloseDistributionPanel(FVPanelGUI::ExitSignal Type)
 {
 	m_GB_DistributionPanel->hide();
@@ -796,7 +812,7 @@ void FiberViewerLightGUI::CloseDisplayClass(FVPanelGUI::ExitSignal Type)
 			m_DistributionGUI->ClearHist();
 		m_GB_DisplayClassPanel->hide();
 		m_GB_ActionPanel->show();
-		if(m_Display->IsUnchanged())
+		if(m_Display->AlphasIsUnchanged())
 		{
 			if(m_Display->GetAlphasSize(FiberDisplay::Previous)>1)
 				m_PB_Undo->setEnabled(true);
@@ -822,6 +838,16 @@ void FiberViewerLightGUI::CloseNormCut(FVPanelGUI::ExitSignal Type)
 	}
 	else if(Type==FVPanelGUI::Undo)
 		m_GB_ActionPanel->show();
+}
+
+void FiberViewerLightGUI::CloseCutter(FVPanelGUI::ExitSignal Type)
+{
+	m_GB_CutterPanel->hide();
+	m_GB_ActionPanel->show();
+	if(m_PlanSetting->isVisible())
+		OpenPlanSetting();
+	if(Type==FVPanelGUI::Ok)
+		m_PB_Undo->setEnabled(false);
 }
 
 void FiberViewerLightGUI::OpenPlanSetting()
@@ -956,10 +982,20 @@ bool FiberViewerLightGUI::ProcessWithoutGUI(std::string Input, std::string Outpu
 	double Spacing, Bounds[6];
 	m_VtkFileName=Input;
 	m_OutputFolder=OutputFolder;
-	vtkSmartPointer<vtkPolyData> PolyData=LoadVTK(Input);
+	if(m_VtkFileName.find_last_of("/")==std::string::npos)
+		m_VtkFileName="./"+m_VtkFileName;
+	vtkSmartPointer<vtkPolyData> PolyData=LoadVTK(m_VtkFileName);
 	m_Display->SetOriginalPolyData(PolyData);
 	m_Display->GetBounds(Bounds);
-	Spacing=ceil(Bounds[1]-Bounds[0]+1)/Voxels;
+	if(Voxels==-1)
+		Spacing=1;
+	else if(Voxels>0)
+		Spacing=ceil(Bounds[1]-Bounds[0]+1)/Voxels;
+	else
+	{
+		std::cout<<"Wrong number of Voxels specified"<<std::endl;
+		return false;
+	}
 	m_Display->SetSpacing(Spacing);
 	for(int i=0; i<ProcessList.size(); i++)
 	{
