@@ -22,28 +22,27 @@ class FVNormCutGUI: public FVPanelGUI
 	public:
 		FVNormCutGUI(QWidget* Parent, FiberDisplay* Display);
 		void InitWeight();
-		void ApplyWeight();
-		double ComputeMeanDistance(int Source,int Target);
+		void ApplyWeight(bool Type=false);
+		double ComputeMeanDistance(int NbSourcePoints,vtkIdType* SourceIds,int NbTargetPoints,vtkIdType* TargetIds);
+		double ComputeMeanDistance(int SourceId,int NbTargetPoints,vtkIdType* TargetIds);
 		std::vector<int> GetMark(){return m_Mark;}
 		int GetNumberOfClasse();
 		void GenerateClass();
 		double Assoc(int BeginId, int EndId, bool All=false);
 		double Cut(int Previous, int Next);
 		std::vector<int> FillMark(std::vector<std::vector<double> > Weight, int& ClusterDone, int NumberOfCluster);
+		std::vector<std::vector<double> > GetDistanceTable(){return m_Weight;}
+		void SetDistanceTable(std::vector<std::vector<double> > Distance){m_Weight=Distance;}
 		
 	public slots:
 		void UndoAction();
 		void NextAction();
-// 		void setLCDValue(int Value);
 		
 	private:
 		std::vector<int> m_Mark;
 		std::vector<std::vector<double> > m_Weight;
 		QLabel* m_L_Cluster;
-// 		QLabel* m_L_Scale;
 		QSpinBox* m_SB_Cluster;
-// 		QSlider* m_S_Scale;
-// 		QLCDNumber* m_LCD_Scale;
 };
 
 #endif

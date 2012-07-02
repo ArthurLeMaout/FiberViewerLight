@@ -5,13 +5,11 @@
 FiberDisplay::FiberDisplay(QWidget* parent) : QWidget(parent)
 {
 	m_OriginalPolyData=vtkSmartPointer<vtkPolyData>::New();
-	m_ModifiedPolyData=vtkSmartPointer<vtkPolyData>::New();
 	m_DisplayedPolyData=vtkSmartPointer<vtkPolyData>::New();
-	iren=QVTKInteractor::New();
-	m_Plane=vtkImplicitPlaneWidget::New();
-	
+	iren=vtkSmartPointer<QVTKInteractor>::New();
+	m_Plane=vtkSmartPointer<vtkImplicitPlaneWidget>::New();
 	m_VTKW_RenderWin=new QVTKWidget;
-	m_VTKW_RenderWin->setMinimumSize(500,571);
+	m_VTKW_RenderWin->setMinimumSize(580,779);
 	
 	QGridLayout* MainLayout=new QGridLayout;
 	MainLayout->addWidget(m_VTKW_RenderWin);
@@ -26,27 +24,26 @@ FiberDisplay::FiberDisplay(QWidget* parent) : QWidget(parent)
 
 void FiberDisplay::InitRenderer()
 {
-	vtkCamera *camera=vtkCamera::New();
+	vtkSmartPointer<vtkCamera> camera=vtkSmartPointer<vtkCamera>::New();
 	camera->SetPosition(1,1,1);
 	camera->SetFocalPoint(0,0,0);
 	
 	//Delete the renderer if there is already one
 	if(m_VTKW_RenderWin->GetRenderWindow()->GetRenderers()->GetNumberOfItems()>0)
 	{
-		vtkRenderer* renderer;
-		renderer=m_VTKW_RenderWin->GetRenderWindow()->GetRenderers()->GetFirstRenderer();
+		vtkRenderer* renderer=m_VTKW_RenderWin->GetRenderWindow()->GetRenderers()->GetFirstRenderer();
 		m_VTKW_RenderWin->GetRenderWindow()->RemoveRenderer(renderer);
 	}
 	
 	//Create a new renderer
-	vtkRenderer* renderer=vtkRenderer::New();
+	vtkSmartPointer<vtkRenderer> renderer=vtkSmartPointer<vtkRenderer>::New();
 	renderer->SetActiveCamera(camera);
 	renderer->ResetCamera();
 	renderer->SetBackground(0.6,0.6,0.6);
 	
 	m_VTKW_RenderWin->GetRenderWindow()->AddRenderer(renderer);
 	iren->SetRenderWindow(m_VTKW_RenderWin->GetRenderWindow());
-	vtkInteractorStyleSwitch* style=vtkInteractorStyleSwitch::New();
+	vtkSmartPointer<vtkInteractorStyleSwitch> style=vtkSmartPointer<vtkInteractorStyleSwitch>::New();
 	style->SetCurrentStyleToTrackballCamera();
 	iren->SetInteractorStyle(style);
 	m_VTKW_RenderWin->GetRenderWindow()->Render();
@@ -54,12 +51,29 @@ void FiberDisplay::InitRenderer()
 
 void FiberDisplay::InitAlphas()
 {
+	m_PreviousAlphas.clear();
+	m_NextAlphas.clear();
 	m_PreviousAlphas.push_back(std::vector<int>());
 	for(int i=0; i<m_OriginalPolyData->GetNumberOfCells(); i++)
 		m_PreviousAlphas[0].push_back(1);
 }
 
-bool FiberDisplay::IsUnchanged()
+void FiberDisplay::InitPointsCut()
+{
+	m_PointsCut.clear();
+	for(int i=0; i<m_OriginalPolyData->GetPoints()->GetNumberOfPoints(); i++)
+		m_PointsCut.push_back(1);
+}
+
+void FiberDisplay::InitDTVector()
+{
+	m_DTVector.clear();
+	int MaxFibers=m_OriginalPolyData->GetNumberOfCells();
+	for(int i=0; i<MaxFibers; i++)
+		m_DTVector.push_back(NULL);
+}
+
+bool FiberDisplay::AlphasIsUnchanged()
 {
 	if(m_PreviousAlphas.size()>1)
 	{
@@ -73,29 +87,24 @@ bool FiberDisplay::IsUnchanged()
 	return true;
 }
 
-vtkPolyData* FiberDisplay::GetOriginalPolyData()
+vtkSmartPointer<vtkPolyData> FiberDisplay::GetOriginalPolyData()
 {
 	return m_OriginalPolyData;
 }
 
-vtkPolyData* FiberDisplay::GetModifiedPolyData()
-{
-	return m_ModifiedPolyData;
-}
-
-vtkRenderer* FiberDisplay::GetRenderer()
+vtkSmartPointer<vtkRenderer> FiberDisplay::GetRenderer()
 {
 		return m_VTKW_RenderWin->GetRenderWindow()->GetRenderers()->GetFirstRenderer();
 }
 
-vtkActor* FiberDisplay::GetActor()
+vtkSmartPointer<vtkActor> FiberDisplay::GetActor()
 {
 	vtkActorCollection* Collection=GetRenderer()->GetActors();
 	Collection->InitTraversal();
 	return Collection->GetNextActor();
 }
 
-std::vector<int> FiberDisplay::GetLastAlpha(AlphasType Type)
+std::vector<int> FiberDisplay::GetLastAlpha(Direction Type)
 {
 	if(Type==FiberDisplay::Next)
 		return m_NextAlphas[m_NextAlphas.size()-1];
@@ -105,7 +114,7 @@ std::vector<int> FiberDisplay::GetLastAlpha(AlphasType Type)
 		return std::vector<int>();
 }
 
-int FiberDisplay::GetAlphasSize(AlphasType Type)
+int FiberDisplay::GetAlphasSize(Direction Type)
 {
 	if(Type==FiberDisplay::Next)
 		return m_NextAlphas.size();
@@ -114,6 +123,12 @@ int FiberDisplay::GetAlphasSize(AlphasType Type)
 	else
 		return 0;
 }
+
+std::vector<int> FiberDisplay::GetPointsCut()
+{
+	return m_PointsCut;
+}
+
 /********************************************************************************
  *GetFiberColor: Color Mapping, coef is a value between 0 and 1 and color is 
  *	the RGB results also between 0 and 1. Doing a linear interpolation between
@@ -153,28 +168,61 @@ void FiberDisplay::GetFiberColor(double coef, double color[])
 		color[i]/=255.0;
 }
 
-void FiberDisplay::SetOriginalPolyData(vtkPolyData* PolyData)
+RealImageType::Pointer FiberDisplay::GetDTVector(int Id)
 {
-	m_OriginalPolyData=PolyData;
+	return m_DTVector[Id];
 }
 
-void FiberDisplay::SetModifiedPolyData(vtkPolyData* PolyData)
+void FiberDisplay::GetBounds(double Bounds[])
 {
-	m_ModifiedPolyData=PolyData;
+	Bounds[0]=m_Bounds[0];
+	Bounds[1]=m_Bounds[1];
+	Bounds[2]=m_Bounds[2];
+	Bounds[3]=m_Bounds[3];
+	Bounds[4]=m_Bounds[4];
+	Bounds[5]=m_Bounds[5];
+}
+
+void FiberDisplay::SetSpacing(double Spacing)
+{
+	if(Spacing!=m_Spacing)
+	{
+		InitDTVector();
+		m_Spacing=Spacing;
+	}
+}
+
+void FiberDisplay::SetOriginalPolyData(vtkSmartPointer<vtkPolyData> PolyData)
+{
+	m_OriginalPolyData=PolyData;
+	m_OriginalPolyData->BuildCells();
+	InitAlphas();
+	InitPointsCut();
+	InitBounds();
+	m_Spacing=1;
+	InitDTVector();
 }
 
 	//Set Mapper's LUT Color Map
-void FiberDisplay::SetLookupTable(vtkLookupTable* Map)
+void FiberDisplay::SetLookupTable(vtkSmartPointer<vtkLookupTable> Map)
 {
 	GetActor()->GetMapper()->SetLookupTable(Map);
 }
 
-void FiberDisplay::SetLastAlpha(std::vector<int> Alpha, AlphasType Type)
+void FiberDisplay::SetLastAlpha(std::vector<int> Alpha, Direction Type)
 {
 	if(Type==FiberDisplay::Next)
 		m_NextAlphas[m_NextAlphas.size()-1]=Alpha;
 	else if(Type==FiberDisplay::Previous)
-		m_PreviousAlphas[m_PreviousAlphas.size()-1]=Alpha;	
+	{
+		m_PreviousAlphas[m_PreviousAlphas.size()-1]=Alpha;
+		emit(NbFibersChanged(GetNbModifiedFibers()));
+	}
+}
+
+void FiberDisplay::SetPointsCut(std::vector<int> PointsCut)
+{
+	m_PointsCut=PointsCut;
 }
 
 void FiberDisplay::SetNbFibersDisplayed(int value)
@@ -182,23 +230,29 @@ void FiberDisplay::SetNbFibersDisplayed(int value)
 	m_NbFibersDisplayed=value;
 }
 
-void FiberDisplay::PushBackAlpha(std::vector<int> Alpha, AlphasType Type)
+void FiberDisplay::PushBackAlpha(std::vector<int> Alpha, Direction Type)
 {
 	if(Type==FiberDisplay::Next)
 		m_NextAlphas.push_back(Alpha);
 	else if(Type==FiberDisplay::Previous)
+	{
 		m_PreviousAlphas.push_back(Alpha);
+		emit(NbFibersChanged(GetNbModifiedFibers()));
+	}
 }
 
-void FiberDisplay::PopBackAlpha(AlphasType Type)
+void FiberDisplay::PopBackAlpha(Direction Type)
 {
 	if(Type==FiberDisplay::Next)
 		m_NextAlphas.pop_back();
 	else if(m_PreviousAlphas.size()>1 && Type==FiberDisplay::Previous)
+	{
 		m_PreviousAlphas.pop_back();
+		emit(NbFibersChanged(GetNbModifiedFibers()));
+	}
 }
 
-void FiberDisplay::ClearAlphas(AlphasType Type)
+void FiberDisplay::ClearAlphas(Direction Type)
 {
 	if(Type==FiberDisplay::Next)
 		m_NextAlphas.clear();
@@ -206,16 +260,11 @@ void FiberDisplay::ClearAlphas(AlphasType Type)
 		m_PreviousAlphas.clear();
 }
 
-/********************************************************************************
- *StarRenderer: First render of a polydata. There is just one actor for the whole
- *	fiber
- ********************************************************************************/
-
-void FiberDisplay::InitPlaneCoord(double Bounds[])
+void FiberDisplay::InitBounds()
 {
-	vtkPoints* Points=m_ModifiedPolyData->GetPoints();
+	vtkPoints* Points=m_OriginalPolyData->GetPoints();
 	double MinY=10000, MaxY=-10000, MinZ=10000, MaxZ=-10000, MinX=10000, MaxX=-10000;
-	for(int i=0; i<m_ModifiedPolyData->GetNumberOfPoints(); i++)
+	for(int i=0; i<m_OriginalPolyData->GetNumberOfPoints(); i++)
 	{
 		double Point[3];
 		Points->GetPoint(i,Point);
@@ -232,23 +281,57 @@ void FiberDisplay::InitPlaneCoord(double Bounds[])
 		if(Point[2]>MaxZ)
 			MaxZ=Point[2];
 	}
-	Bounds[0]=MinX;
-	Bounds[1]=MaxX;
-	Bounds[2]=MinY;
-	Bounds[3]=MaxY;
-	Bounds[4]=MinZ;
-	Bounds[5]=MaxZ;
+	m_Bounds[0]=MinX;
+	m_Bounds[1]=MaxX;
+	m_Bounds[2]=MinY;
+	m_Bounds[3]=MaxY;
+	m_Bounds[4]=MinZ;
+	m_Bounds[5]=MaxZ;
 }
 
-std::vector<int> FiberDisplay::GenerateRandomIds(vtkSmartPointer<vtkPolyData> PolyData)
+void FiberDisplay::InitPlan()
+{
+	m_Plane->SetPlaceFactor(1);
+	m_Plane->PlaceWidget(m_Bounds);
+	m_Plane->SetInteractor(iren);
+	m_Plane->SetOrigin((m_Bounds[0]+m_Bounds[1])/2,(m_Bounds[2]+m_Bounds[3])/2,(m_Bounds[4]+m_Bounds[5])/2);
+	m_Plane->SetNormal(1,0,0);
+	m_Plane->UpdatePlacement();
+	m_Plane->Off();
+}
+
+
+int FiberDisplay::GetNbModifiedFibers()
+{
+	int NbModifiedFibers=0;
+	std::vector<int> Alpha=GetLastAlpha(FiberDisplay::Previous);
+	for(int i=0; i<Alpha.size(); i++)
+	{
+		if(Alpha[i]==1)
+			NbModifiedFibers++;
+	}
+	return NbModifiedFibers;
+}
+
+std::vector<int> FiberDisplay::GenerateRandomIds()
 {
 	srand(time(NULL));
-	std::vector<int> RandomIds=std::vector<int>();
-	int Random=rand()%PolyData->GetNumberOfCells();
-	RandomIds.push_back(Random);
-	for(int i=1; i<m_NbFibersDisplayed; i++)
+	std::vector<int> RandomIds;
+	int NumberOfFibers=GetNbModifiedFibers();
+	int Random;
+	int NbOfRandomIds;
+	if( ((double)m_NbFibersDisplayed/(double)NumberOfFibers)*100 < 50 )
+		NbOfRandomIds=m_NbFibersDisplayed;
+	else
+		NbOfRandomIds=NumberOfFibers-m_NbFibersDisplayed;
+	if(NbOfRandomIds!=0)
 	{
-		Random=rand()%PolyData->GetNumberOfCells();
+		Random=rand()%NumberOfFibers;
+		RandomIds.push_back(Random);
+	}
+	for(int i=1; i<NbOfRandomIds; i++)
+	{
+		Random=rand()%NumberOfFibers;
 		while(std::find(RandomIds.begin(), RandomIds.end(), Random)!=RandomIds.end())
 			Random++;
 		RandomIds.push_back(Random);
@@ -257,29 +340,71 @@ std::vector<int> FiberDisplay::GenerateRandomIds(vtkSmartPointer<vtkPolyData> Po
 	return RandomIds;	
 }
 
-void FiberDisplay::StartRenderer(vtkPolyData* PolyData)
+void FiberDisplay::FillDisplayedId(std::vector<int> RandomIds)
+{
+	m_DisplayedId.clear();
+	int RandCountId=0, RandCount=0;
+	std::vector <int> Alpha=GetLastAlpha(FiberDisplay::Previous);
+	int NumberOfFibers=GetNbModifiedFibers();
+	for(int i=0; i<Alpha.size(); i++)
+	{
+		if(Alpha[i]==0)
+			m_DisplayedId.push_back(0);
+		else if(Alpha[i]==1)
+		{
+			if( ((double)m_NbFibersDisplayed/(double)NumberOfFibers)*100<50)
+			{
+				if(RandomIds[RandCountId]==RandCount)
+				{
+					RandCountId++;
+					m_DisplayedId.push_back(1);
+				}
+				else
+					m_DisplayedId.push_back(0);
+			}
+			else
+			{	if(RandomIds.size()>0)
+				{
+					if(RandomIds[RandCountId]==RandCount)
+					{
+						RandCountId++;
+						m_DisplayedId.push_back(0);
+					}
+					else
+						m_DisplayedId.push_back(1);
+				}
+				else
+					m_DisplayedId.push_back(1);
+			}
+			RandCount++;
+		}
+	}
+}
+
+void FiberDisplay::StartRenderer(vtkSmartPointer<vtkPolyData> PolyData)
 {
 	//Copy PolyData in Original in case of step back
 	m_OriginalPolyData->DeepCopy(PolyData);
-	m_ModifiedPolyData->DeepCopy(PolyData);
+	m_OriginalPolyData->BuildCells();
 	m_DisplayedPolyData=PolyData;
 	InitAlphas();
+	InitPointsCut();
 	
 	//Get actual renderer
-	vtkRenderer* Renderer=vtkRenderer::New();
+	vtkSmartPointer<vtkRenderer> Renderer=vtkSmartPointer<vtkRenderer>::New();
 	Renderer=GetRenderer();
 	if(Renderer!=NULL)
 	{
-		double Bounds[6];
-		InitPlaneCoord(Bounds);
-		InitPlan(Bounds);
+		InitBounds();
+		InitPlan();
+		m_Spacing=1;
 		
 		//Set mapper's input
-		vtkPolyDataMapper* PolyDataMapper=vtkPolyDataMapper::New();
+		vtkSmartPointer<vtkPolyDataMapper> PolyDataMapper=vtkSmartPointer<vtkPolyDataMapper>::New();
 		PolyDataMapper->SetInput(m_DisplayedPolyData);
 		
 		//Set actor's mapper
-		vtkActor* PolyDataActor=vtkActor::New();
+		vtkSmartPointer<vtkActor> PolyDataActor=vtkSmartPointer<vtkActor>::New();
 		PolyDataActor->SetMapper(PolyDataMapper);
 		
 		//Add actor and set actor's color
@@ -298,110 +423,153 @@ void FiberDisplay::Render()
 
 void FiberDisplay::UpdateCells()
 {
+	std::vector<int> PointsCut=GetPointsCut();
+	FillDisplayedId(GenerateRandomIds());
 	vtkSmartPointer<vtkPolyData> ModifiedPolyData=vtkSmartPointer<vtkPolyData>::New();
-	vtkFloatArray* NewScalars=vtkFloatArray::New();
-	vtkFloatArray* NewTensors=vtkFloatArray::New();
-	NewTensors->SetNumberOfComponents(9);
+	vtkSmartPointer<vtkFloatArray> NewScalars=vtkSmartPointer<vtkFloatArray>::New();
+	vtkSmartPointer<vtkPoints> NewPoints=vtkSmartPointer<vtkPoints>::New();
+	vtkSmartPointer<vtkCellArray> NewLines=vtkSmartPointer<vtkCellArray>::New();
 	vtkDataArray* Scalars=m_OriginalPolyData->GetPointData()->GetScalars();
-	vtkDataArray* Tensors=m_OriginalPolyData->GetPointData()->GetTensors();
-	vtkPoints* NewPoints=vtkPoints::New();
-	vtkCellArray* NewLines=vtkCellArray::New();
+	
 	vtkPoints* Points=m_OriginalPolyData->GetPoints();
 	vtkCellArray* Lines=m_OriginalPolyData->GetLines();
 	vtkIdType* Ids;
 	vtkIdType NumberOfPoints;
+	
 	int NewId=0;
 	Lines->InitTraversal();
-	
 	for(int i=0; Lines->GetNextCell(NumberOfPoints, Ids); i++)
 	{
-		if(m_PreviousAlphas[m_PreviousAlphas.size()-1][i]==1)
+		if(m_DisplayedId[i]==1)
 		{
-			vtkPolyLine* NewLine=vtkPolyLine::New();
-			NewLine->GetPointIds()->SetNumberOfIds(NumberOfPoints);
+			std::vector<int> TempFiber;
 			for(int j=0; j<NumberOfPoints; j++)
 			{
-				NewPoints->InsertNextPoint(Points->GetPoint(Ids[j]));
-				NewLine->GetPointIds()->SetId(j,NewId);
-				NewId++;
-				NewScalars->InsertNextValue(Scalars->GetComponent(0,Ids[j]));
-				double tensorValue[9];
-				for(int k=0; k<9; k++)
-					tensorValue[k]=Tensors->GetComponent(Ids[j],k);
-				NewTensors->InsertNextTuple(tensorValue);
+				if(PointsCut[Ids[j]]==1)
+				{
+					TempFiber.push_back(NewId);
+					NewPoints->InsertNextPoint(Points->GetPoint(Ids[j]));
+					NewId++;
+					NewScalars->InsertNextValue(Scalars->GetComponent(0,Ids[j]));
+				}
+				else if(TempFiber.size()>0)
+				{
+					vtkSmartPointer<vtkPolyLine> NewLine=vtkSmartPointer<vtkPolyLine>::New();
+					NewLine->GetPointIds()->SetNumberOfIds(TempFiber.size());
+					for(int k=0; k<TempFiber.size(); k++)
+						NewLine->GetPointIds()->SetId(k,TempFiber[k]);
+					NewLines->InsertNextCell(NewLine);
+					TempFiber.clear();
+				}
 			}
-			NewLines->InsertNextCell(NewLine);
+			if(TempFiber.size()>0)
+			{
+				vtkSmartPointer<vtkPolyLine> NewLine=vtkSmartPointer<vtkPolyLine>::New();
+				NewLine->GetPointIds()->SetNumberOfIds(TempFiber.size());
+				for(int k=0; k<TempFiber.size(); k++)
+					NewLine->GetPointIds()->SetId(k,TempFiber[k]);
+				NewLines->InsertNextCell(NewLine);
+			}
 		}
 	}
 	ModifiedPolyData->SetPoints(NewPoints);
-	ModifiedPolyData->GetPointData()->SetTensors(NewTensors);
 	ModifiedPolyData->SetLines(NewLines);
 	ModifiedPolyData->GetPointData()->SetScalars(NewScalars);
-	m_ModifiedPolyData->DeepCopy(ModifiedPolyData);
-	emit(NbFibersChanged(m_ModifiedPolyData->GetNumberOfCells()));
-	UpdateDisplayedFibers();
+	m_DisplayedPolyData->DeepCopy(ModifiedPolyData);
+	Render();
 }
 
-vtkImplicitPlaneWidget* FiberDisplay::GetPlan()
+IntImageType::Pointer FiberDisplay::Voxelize(int Id)
+{
+	IntImageType::Pointer LabelImage=IntImageType::New();
+	double Origin[3], Spacing[3];
+	Spacing[0]=m_Spacing;
+	Spacing[1]=m_Spacing;
+	Spacing[2]=m_Spacing;
+	LabelImage->SetSpacing(Spacing);
+	
+	Origin[0]=m_Bounds[0];
+	Origin[1]=m_Bounds[2];
+	Origin[2]=m_Bounds[4];
+	LabelImage->SetOrigin(Origin);
+	
+	IntImageType::RegionType Region;
+	IntImageType::SizeType RegionSize;
+	RegionSize[0]=ceil(m_Bounds[1]-m_Bounds[0]+1)/m_Spacing;
+	RegionSize[1]=ceil(m_Bounds[3]-m_Bounds[2]+1)/m_Spacing;
+	RegionSize[2]=ceil(m_Bounds[5]-m_Bounds[4]+1)/m_Spacing;
+	
+	IntImageType::IndexType RegionIndex;
+	RegionIndex[0]=0;
+	RegionIndex[1]=0;
+	RegionIndex[2]=0;
+	
+	Region.SetSize(RegionSize);
+	Region.SetIndex(RegionIndex);
+	LabelImage->SetRegions(Region);
+	
+	LabelImage->Allocate();
+	LabelImage->FillBuffer(0);
+	
+	vtkIdType NbPoints;
+	vtkIdType* PointIds;
+	vtkPoints* Points=m_OriginalPolyData->GetPoints();
+	m_OriginalPolyData->GetCellPoints(Id, NbPoints, PointIds);
+	
+	for(int i=0; i<NbPoints; i++)
+	{
+		double Point[3];
+		Points->GetPoint(PointIds[i], Point);
+		itk::Point<double,3> ITKPoint;
+		ITKPoint[0]=Point[0];
+		ITKPoint[1]=Point[1];
+		ITKPoint[2]=Point[2];
+		
+		ContinuousIndexType ContId;
+		itk::Index<3> Index;
+		LabelImage->TransformPhysicalPointToContinuousIndex(ITKPoint, ContId);
+		Index[0]=static_cast<long int>(vnl_math_rnd_halfinttoeven(ContId[0]));
+		Index[1]=static_cast<long int>(vnl_math_rnd_halfinttoeven(ContId[1]));
+		Index[2]=static_cast<long int>(vnl_math_rnd_halfinttoeven(ContId[2]));
+		if(!LabelImage->GetLargestPossibleRegion().IsInside(Index))
+		{
+			std::cerr << "Error index: " << Index << " not in image"  << std::endl;
+			std::cout << "Ignoring" << std::endl;
+			return NULL;
+		}
+		else
+		{
+			LabelImage->SetPixel(Index, 1);
+		}
+	}
+	return LabelImage;
+}
+	
+
+void FiberDisplay::UpdateDT()
+{
+	int MaxFibers=m_OriginalPolyData->GetNumberOfCells();
+	std::vector<int> Alpha=GetLastAlpha(FiberDisplay::Previous);
+	typedef itk::DanielssonDistanceMapImageFilter <IntImageType,RealImageType> DanielssonType;
+	
+	for(int i=0; i<MaxFibers; i++)
+	{
+		if(Alpha[i]==1 && !m_DTVector[i])
+		{
+			DanielssonType::Pointer DanielssonFilter=DanielssonType::New();
+			IntImageType::Pointer LabelImage=IntImageType::New();
+			LabelImage=Voxelize(i);
+			m_DTVector[i]=RealImageType::New();
+			DanielssonFilter->SetInput(LabelImage);
+			DanielssonFilter->Update();
+			m_DTVector[i]=DanielssonFilter->GetDistanceMap();
+		}
+		emit Progress((double)i*100.0/(double)MaxFibers);
+	}
+}
+
+vtkSmartPointer<vtkImplicitPlaneWidget> FiberDisplay::GetPlan()
 {
 	return m_Plane;
 }
 
-void FiberDisplay::InitPlan(double Bounds[])
-{
-	m_Plane->SetPlaceFactor(1);
-	m_Plane->PlaceWidget(Bounds);
-	m_Plane->SetInteractor(iren);
-	m_Plane->SetOrigin((Bounds[0]+Bounds[1])/2,(Bounds[2]+Bounds[3])/2,(Bounds[4]+Bounds[5])/2);
-	m_Plane->SetNormal(1,0,0);
-	m_Plane->UpdatePlacement();
-	m_Plane->Off();
-}
-
-void FiberDisplay::UpdateDisplayedFibers()
-{
-	std::vector<int> RandomIds=GenerateRandomIds(m_ModifiedPolyData);
-	int RandCount=0;
-	vtkSmartPointer<vtkPolyData> DisplayedPolyData=vtkSmartPointer<vtkPolyData>::New();
-	vtkFloatArray* NewScalars=vtkFloatArray::New();
-	vtkFloatArray* NewTensors=vtkFloatArray::New();
-	NewTensors->SetNumberOfComponents(9);
-	vtkDataArray* Scalars=m_ModifiedPolyData->GetPointData()->GetScalars();
-	vtkDataArray* Tensors=m_ModifiedPolyData->GetPointData()->GetTensors();
-	vtkPoints* NewPoints=vtkPoints::New();
-	vtkCellArray* NewLines=vtkCellArray::New();
-	vtkPoints* Points=m_ModifiedPolyData->GetPoints();
-	vtkCellArray* Lines=m_ModifiedPolyData->GetLines();
-	vtkIdType* Ids;
-	vtkIdType NumberOfPoints;
-	int NewId=0;
-	Lines->InitTraversal();
-	
-	for(int i=0; Lines->GetNextCell(NumberOfPoints, Ids); i++)
-	{
-		if(RandomIds[RandCount]==i)
-		{
-			RandCount++;
-			vtkPolyLine* NewLine=vtkPolyLine::New();
-			NewLine->GetPointIds()->SetNumberOfIds(NumberOfPoints);
-			for(int j=0; j<NumberOfPoints; j++)
-			{
-				NewPoints->InsertNextPoint(Points->GetPoint(Ids[j]));
-				NewLine->GetPointIds()->SetId(j,NewId);
-				NewId++;
-				NewScalars->InsertNextValue(Scalars->GetComponent(0,Ids[j]));
-				double tensorValue[9];
-				for(int k=0; k<9; k++)
-					tensorValue[k]=Tensors->GetComponent(Ids[j],k);
-				NewTensors->InsertNextTuple(tensorValue);
-			}
-			NewLines->InsertNextCell(NewLine);
-		}
-	}
-	DisplayedPolyData->SetPoints(NewPoints);
-	DisplayedPolyData->GetPointData()->SetTensors(NewTensors);
-	DisplayedPolyData->SetLines(NewLines);
-	DisplayedPolyData->GetPointData()->SetScalars(NewScalars);
-	m_DisplayedPolyData->DeepCopy(DisplayedPolyData);	
-	Render();
-}

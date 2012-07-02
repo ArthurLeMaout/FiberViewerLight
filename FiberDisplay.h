@@ -23,62 +23,89 @@
 #include <vtkInteractorStyleSwitch.h>
 #include <vtkImplicitPlaneWidget.h>
 
+#include <itkImage.h>
+#include <itkContinuousIndex.h>
+#include <itkVectorLinearInterpolateImageFunction.h>
+#include <itkDanielssonDistanceMapImageFilter.h>
+#include <vnl/vnl_math.h>
+
 #include <time.h>
 #include <algorithm>
 
+typedef itk::Image<unsigned short, 3> IntImageType;
+typedef itk::Image<double, 3> RealImageType;
+typedef itk::Vector<double, 3> InterpolatePixelType;
+typedef itk::Image<InterpolatePixelType, 3> InterpolateImageType;
+typedef itk::VectorLinearInterpolateImageFunction<InterpolateImageType, double> InterpolateType;
+typedef InterpolateType::ContinuousIndexType ContinuousIndexType;
 
 class FiberDisplay: public QWidget
 {
 	Q_OBJECT
 	
 	public:
-		enum AlphasType{Next,Previous};
+		enum Direction{Next,Previous};
 		
 		FiberDisplay(QWidget* parent);
 		void InitRenderer();
 		void InitAlphas();
+		void InitPointsCut();
+		void InitDTVector();
 		
-		vtkPolyData* GetOriginalPolyData();
-		vtkPolyData* GetModifiedPolyData();
-		vtkRenderer* GetRenderer();
-		vtkActor* GetActor();
-		std::vector<int> GetLastAlpha(AlphasType Type);
-		int GetAlphasSize(AlphasType Type);
+		vtkSmartPointer<vtkPolyData> GetOriginalPolyData();
+		vtkSmartPointer<vtkRenderer> GetRenderer();
+		vtkSmartPointer<vtkActor> GetActor();
+		std::vector<int> GetLastAlpha(Direction Type);
+		std::vector<int> GetPointsCut();
+		int GetAlphasSize(Direction Type);
 		void GetFiberColor(double coef, double color[]);
+		double GetSpacing(){return m_Spacing;}
+		RealImageType::Pointer GetDTVector(int Id);
+		void GetBounds(double[]);
+		int GetNumberOfPointsCut(int,int);
 		
-		void SetOriginalPolyData(vtkPolyData* PolyData);
-		void SetModifiedPolyData(vtkPolyData* PolyData);
-		void SetLookupTable(vtkLookupTable* RedMap);
-		void SetLastAlpha(std::vector<int> Alpha, AlphasType Type);
+		void SetOriginalPolyData(vtkSmartPointer<vtkPolyData> PolyData);
+		void SetLookupTable(vtkSmartPointer<vtkLookupTable> RedMap);
+		void SetLastAlpha(std::vector<int> Alpha, Direction Type);
+		void SetPointsCut(std::vector<int> PointsCut);
+		void SetSpacing(double Spacing);
 		
-		void ClearAlphas(AlphasType Type);
-		void PushBackAlpha(std::vector<int> Alpha, AlphasType Type);
-		void PopBackAlpha(AlphasType Type);
-		std::vector<int> GenerateRandomIds(vtkSmartPointer<vtkPolyData> PolyData);
-		void StartRenderer(vtkPolyData* PolyData);
+		void ClearAlphas(Direction Type);
+		void PushBackAlpha(std::vector<int> Alpha, Direction Type);
+		void PopBackAlpha(Direction Type);
+		int GetNbModifiedFibers();
+		std::vector<int> GenerateRandomIds();
+		void StartRenderer(vtkSmartPointer<vtkPolyData> PolyData);
 		void Render();
 		void UpdateCells();
-		void InitPlaneCoord(double Bounds[]);
-		vtkImplicitPlaneWidget* GetPlan();
-		void InitPlan(double Bounds[]);
-		bool IsUnchanged();
-		void UpdateDisplayedFibers();
+		IntImageType::Pointer Voxelize(int Id);
+		void InitBounds();
+		vtkSmartPointer<vtkImplicitPlaneWidget> GetPlan();
+		void InitPlan();
+		bool AlphasIsUnchanged();
 		void SetNbFibersDisplayed(int value);
+		void FillDisplayedId(std::vector<int> RandomIds);
+		void UpdateDT();
 		
 	signals:
 		void NbFibersChanged(int);
+		void Progress(int);
 	
 	private:
-		QVTKInteractor* iren;
-		vtkImplicitPlaneWidget* m_Plane;
+		vtkSmartPointer<QVTKInteractor> iren;
+		vtkSmartPointer<vtkImplicitPlaneWidget> m_Plane;
 		QVTKWidget* m_VTKW_RenderWin;
 		vtkSmartPointer<vtkPolyData> m_OriginalPolyData;
-		vtkSmartPointer<vtkPolyData> m_ModifiedPolyData;
 		vtkSmartPointer<vtkPolyData> m_DisplayedPolyData;
 		std::vector<std::vector<int> > m_PreviousAlphas;
 		std::vector<std::vector<int> > m_NextAlphas;
+		std::vector<int> m_PointsCut;
 		int m_NbFibersDisplayed;
-// 		std::vector<int> m_DisplayedId;
+		double m_Spacing;
+		double m_Bounds[6];
+		std::vector<int> m_DisplayedId;
+		std::vector<RealImageType::Pointer> m_DTVector;
+		
 };
 
 #endif

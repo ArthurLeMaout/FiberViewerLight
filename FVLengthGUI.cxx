@@ -3,6 +3,9 @@
 FVLengthGUI::FVLengthGUI(QWidget* Parent, FiberDisplay* Display) : FVPanelGUI(Parent,Display)
 {
 	m_HistPlot=new QwtPlot;
+	m_HistPlot->setMinimumSize(300,250);
+	m_HistPlot->setAxisTitle(QwtPlot::yLeft, "Frequency");
+	m_HistPlot->setAxisTitle(QwtPlot::xBottom, "Length (mm)");
 	m_Hist=new QwtPlotHistogram;
 	m_Hist->setPen(QPen(Qt::white,0));
 	m_Hist->setBrush(QColor(51,0,153));
@@ -27,8 +30,8 @@ FVLengthGUI::FVLengthGUI(QWidget* Parent, FiberDisplay* Display) : FVPanelGUI(Pa
 	m_SB_UpperTh=new QSpinBox(this);
 	m_SB_UpperTh->setSingleStep(1);
 	m_SB_UpperTh->setRange(0,1000);
-	m_L_LowerTh=new QLabel("Lower Threshold", this);
-	m_L_UpperTh=new QLabel("Upper Threshold", this);
+	m_L_LowerTh=new QLabel("Lower Threshold (mm)", this);
+	m_L_UpperTh=new QLabel("Upper Threshold (mm)", this);
 	m_PB_LengthComputation=new QPushButton("Apply Threshold",this);
 	
 	QGridLayout* GL_LengthFilter=new QGridLayout;
@@ -63,15 +66,14 @@ void FVLengthGUI::LengthCalculation()
 	vtkPoints* Points=vtkPoints::New();
 	vtkIdType* Ids;
 	vtkIdType NumberOfPoints;
-	Points=m_Display->GetModifiedPolyData()->GetPoints();
-	Lines=m_Display->GetModifiedPolyData()->GetLines();
-	
+	Points=m_Display->GetOriginalPolyData()->GetPoints();
+	Lines=m_Display->GetOriginalPolyData()->GetLines();
 	Lines->InitTraversal();
 	for(unsigned int i=0; i<Alpha.size(); i++)
 	{
+		Lines->GetNextCell(NumberOfPoints, Ids);
 		if(Alpha[i]==1)
 		{
-			Lines->GetNextCell(NumberOfPoints, Ids);
 			FiberLength=0;
 			for(unsigned int pointId=0; pointId+1< NumberOfPoints; pointId++)
 			{
@@ -100,12 +102,11 @@ void FVLengthGUI::InitLengthPanel()
 {
 	LengthCalculation();		//Fill m_Length table
 	InitLengthColorMap();	//Fill m_ColorMap
-				
 	//Set default threshold values
 	m_SB_UpperTh->setValue((int)ceil(GetMaxLength()));
 	m_SB_LowerTh->setValue((int)floor(GetMinLength()));
 	
-	m_Display->PushBackAlpha(m_Display->GetLastAlpha(FiberDisplay::Previous),FiberDisplay::Previous);
+	m_Display->PushBackAlpha(m_Display->GetLastAlpha(FiberDisplay::Previous),FiberDisplay::Previous);;
 }
 	
 /********************************************************************************
@@ -143,7 +144,6 @@ void FVLengthGUI::LengthComputation()
 	m_Display->SetLastAlpha(Alpha, FiberDisplay::Previous);
 	m_Display->UpdateCells();
 	m_Display->Render();
-	
 	QwtIntervalSeriesData* HistData=new QwtIntervalSeriesData;
 	QVector<QwtIntervalSample> Samples;
 	double Step=(Max-Min)/m_SB_NbBars->value();
@@ -241,7 +241,6 @@ void FVLengthGUI::SetFiberOpacity(vtkIdType Id, int a)
 
 void FVLengthGUI::UndoAction()
 {
-// 	m_Display->PushBackAlpha(m_Display->GetLastAlpha(FiberDisplay::Previous), FiberDisplay::Next);
 	m_Display->PopBackAlpha(FiberDisplay::Previous);
 	m_Hist->setSamples(QVector<QwtIntervalSample>());
 	m_HistPlot->replot();
