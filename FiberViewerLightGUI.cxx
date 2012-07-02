@@ -78,7 +78,7 @@ void FiberViewerLightGUI::InitWidgets()
 		m_PlanSetting=new PlanSetting(this, m_Display);
 		m_PlanSetting->hide();
 		
-		m_GB_ActionPanel=new QGroupBox("Fiber Viewer Light 1.0");
+		m_GB_ActionPanel=new QGroupBox("Fiber Viewer Light 1.2");
 		m_GB_ActionPanel->setMinimumSize(350,620);
 		m_GB_ActionPanel->setMaximumSize(350,620);
 		
