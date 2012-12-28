@@ -31,19 +31,19 @@ ELSE(QT_USE_FILE)
 ENDIF(QT_USE_FILE)
 
 # Qwt include directory
-if( NOT ${QWT_INCLUDE_DIR} )
-  FIND_PATH(QWT_INCLUDE_DIR qwt.h
-    /usr/local/qwt/include
-    /usr/local/include
-    /usr/include/qwt
-    /usr/include
-  )
-endif()
+
+FIND_PATH(QWT_INCLUDE_DIR qwt.h
+  ${QWT_INCLUDE_DIR_GIVEN}
+  /usr/local/qwt/include
+  /usr/local/include
+  /usr/include/qwt
+  /usr/include
+)
+
 
 if(NOT QWT_INCLUDE_DIR)
   message(FATAL_ERROR "QWT_INCLUDE_DIR not found. It should be set to a path containing qwt.h, like '/Projects/qwt-6.0.1-svn/include'")
 endif()
-include_directories(${QWT_INCLUDE_DIR})
 
 # Qwt libraries
 SET(QWT_NAMES ${QWT_NAMES} qwt libqwt)
@@ -56,20 +56,9 @@ if(NOT QWT_LIBRARY)
 endif()
 set(QWT_LIBRARIES ${QWT_LIBRARY})
 
-FIND_PACKAGE(GenerateCLP REQUIRED)
-IF (GenerateCLP_FOUND)
-  INCLUDE(${GenerateCLP_USE_FILE})
-ELSE(GenerateCLP_FOUND)
-   MESSAGE(FATAL_ERROR, "GenerateCLP not found. Please set GenerateCLP_DIR.")
-ENDIF (GenerateCLP_FOUND)
+find_package(SlicerExecutionModel REQUIRED)
+include(${SlicerExecutionModel_USE_FILE})
 
-GENERATECLP(FiberViewerLight.cxx FiberViewerLight.xml)
-
-INCLUDE_DIRECTORIES(
-  ${QT_INCLUDE_DIR}
-  ${FVLight_BINARY_DIR}
-  ${FVLight_SOURCE_DIR}
-)
 
 QT4_WRAP_CPP(MOC_FILES FiberViewerLightGUI.h FVLengthGUI.h FVDistributionGUI.h FVPanelGUI.h FVDisplayClassGUI.h FVCutterGUI.h FVNormalizedCutGUI.h PlanSetting.h FiberDisplay.h)
 
@@ -77,10 +66,10 @@ SET(FVLight_source FiberViewerLight.cxx FiberViewerLightGUI.cxx FiberDisplay.cxx
 SET(FVLight_header FiberViewerLightGUI.h FiberDisplay.h FVLengthGUI.h FVDistributionGUI.h FVPanelGUI.h FVDisplayClassGUI.h FVNormalizedCutGUI.h PlanSetting.h FVCutterGUI.h)
 
 # GENERATECLP(FiberViewerLight.cxx FiberViewerLight.xml)
-add_executable( FiberViewerLight ${FVLight_source} ${FVLight_header})
+#add_executable( FiberViewerLight ${FVLight_source} ${FVLight_header})
 
-TARGET_LINK_LIBRARIES(FiberViewerLight
-   vtkWidgets
+set(VTK_LIBRARIES 
+  vtkWidgets
   vtkRendering
   vtkGraphics
   vtkImaging
@@ -107,7 +96,21 @@ TARGET_LINK_LIBRARIES(FiberViewerLight
   vtkexoIIc
   vtkftgl
   vtkfreetype
+)
+
+set( FVL_LIBRARIES 
   ${ITK_LIBRARIES}
   ${QT_LIBRARIES}
   ${QWT_LIBRARIES}
+  ${VTK_LIBRARIES}
 )
+
+  SEMMacroBuildCLI(
+    NAME FiberViewerLight
+    ADDITIONAL_SRCS ${FVLight_source} ${FVLight_header} ${MOC_FILES}
+    TARGET_LIBRARIES ${FVL_LIBRARIES}
+    EXECUTABLE_ONLY
+    INCLUDE_DIRECTORIES ${QT_INCLUDE_DIR} ${FVLight_BINARY_DIR} ${FVLight_SOURCE_DIR} ${QWT_INCLUDE_DIR} ${VTK_INCLUDE_DIRS}
+    )
+
+
