@@ -14,8 +14,7 @@ integrated in Slicer")
 "http://www.nitrc.org/project/list_screenshots.php?group_id=534&screenshot_id=599
 http://www.nitrc.org/project/list_screenshots.php?group_id=534&screenshot_id=597")
   set(EXTENSION_STATUS "Beta")
-  set(EXTENSION_DEPENDS "NA") # Specified as a space separated list or 'NA' if
-any
+  set(EXTENSION_DEPENDS "NA") # Specified as a space separated list or 'NA' if any
   set(EXTENSION_BUILD_SUBDIRECTORY fvlight-build)
 endif()
 
@@ -96,7 +95,7 @@ ExternalProject_Add(${proj}
   CONFIGURE_COMMAND ${QT_QMAKE_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/${proj}
   INSTALL_COMMAND ""
 )
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/QWT/lib/ DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_LIBRARY_DESTINATION} )
+#install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/QWT/lib/ DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_LIBRARY_DESTINATION} )
 
 set(proj fvlight)
 ExternalProject_Add(${proj}
@@ -105,7 +104,7 @@ ExternalProject_Add(${proj}
   SVN_PASSWORD slicer
   SOURCE_DIR ${proj}
   BINARY_DIR ${proj}-build
-  SVN_REVISION -r 30
+  SVN_REVISION -r 31
   DEPENDS QWT VTK
   CMAKE_GENERATOR ${gen}
   CMAKE_ARGS
@@ -127,6 +126,7 @@ ExternalProject_Add(${proj}
     -DSlicer_USE_FILE:FILEPATH=${Slicer_USE_FILE}
     -DSlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY:PATH=${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY}
     -DSlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION:PATH=${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}
+    -DSlicerExecutionModel_DEFAULT_CLI_INSTALL_LIBRARY_DESTINATION:PATH=${SlicerExecutionModel_DEFAULT_CLI_INSTALL_LIBRARY_DESTINATION}
     INSTALL_COMMAND ""
 )
 
