@@ -28,7 +28,6 @@ if(NOT Slicer_SOURCE_DIR)
   include(${Slicer_USE_FILE})
 endif()
 
-enable_testing()
 
 include(ExternalProject)
 if(CMAKE_EXTRA_GENERATOR)
@@ -106,7 +105,7 @@ ExternalProject_Add(${proj}
   SVN_PASSWORD slicer
   SOURCE_DIR ${proj}
   BINARY_DIR ${proj}-build
-  SVN_REVISION -r 28
+  SVN_REVISION -r 30
   DEPENDS QWT VTK
   CMAKE_GENERATOR ${gen}
   CMAKE_ARGS
@@ -130,6 +129,4 @@ ExternalProject_Add(${proj}
     -DSlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION:PATH=${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}
     INSTALL_COMMAND ""
 )
-#install(PROGRAMS ${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY}/FiberViewerLight DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}) 
 
-#-----------------------------------------------------------------------------
