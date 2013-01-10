@@ -13,6 +13,10 @@ integrated in Slicer")
   set(EXTENSION_SCREENSHOTURLS 
 "http://www.nitrc.org/project/list_screenshots.php?group_id=534&screenshot_id=599
 http://www.nitrc.org/project/list_screenshots.php?group_id=534&screenshot_id=597")
+  set(EXTENSION_STATUS "Beta")
+  set(EXTENSION_DEPENDS "NA") # Specified as a space separated list or 'NA' if
+any
+  set(EXTENSION_BUILD_SUBDIRECTORY fvlight-build)
 endif()
 
 #-----------------------------------------------------------------------------
@@ -102,7 +106,7 @@ ExternalProject_Add(${proj}
   SVN_PASSWORD slicer
   SOURCE_DIR ${proj}
   BINARY_DIR ${proj}-build
-  SVN_REVISION -r 27
+  SVN_REVISION -r 28
   DEPENDS QWT VTK
   CMAKE_GENERATOR ${gen}
   CMAKE_ARGS
@@ -115,11 +119,17 @@ ExternalProject_Add(${proj}
     -DITK_DIR:PATH=${ITK_DIR}
     -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
     -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
+    -DMIDAS_PACKAGE_EMAIL:STRING=${MIDAS_PACKAGE_EMAIL}
+    -DMIDAS_PACKAGE_API_KEY:STRING=${MIDAS_PACKAGE_API_KEY}
+    -DEXTENSION_NAME:STRING=${EXTENSION_NAME}
+    -DEXTENSION_SUPERBUILD_BINARY_DIR:PATH=${${EXTENSION_NAME}_BINARY_DIR}
+    # Slicer
+    -DSlicer_DIR:PATH=${Slicer_DIR}
+    -DSlicer_USE_FILE:FILEPATH=${Slicer_USE_FILE}
+    -DSlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY:PATH=${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY}
+    -DSlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION:PATH=${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}
     INSTALL_COMMAND ""
 )
-install(PROGRAMS ${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY}/FiberViewerLight DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}) 
+#install(PROGRAMS ${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY}/FiberViewerLight DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}) 
 
 #-----------------------------------------------------------------------------
-if(NOT Slicer_SOURCE_DIR)
-  include(${Slicer_EXTENSION_CPACK})
-endif()

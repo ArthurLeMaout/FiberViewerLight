@@ -114,3 +114,16 @@ set( FVL_LIBRARIES
     )
 
 
+if( EXTENSION_SUPERBUILD_BINARY_DIR )
+  install(PROGRAMS
+${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY}/FiberViewerLight
+DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION})
+  set( VTK_DIR_TMP ${VTK_DIR} )
+  unset( VTK_DIR CACHE )
+  unset( VTK_DIR )
+  set(Slicer_SKIP_PROJECT_COMMAND ON)
+  find_package(Slicer REQUIRED)
+  include(${Slicer_USE_FILE})
+  set( VTK_DIR ${VTK_DIR_TMP} CACHE PATH "VTK PATH" FORCE )
+  include(${Slicer_EXTENSION_CPACK})
+endif()
