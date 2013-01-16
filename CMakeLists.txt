@@ -1,7 +1,39 @@
 Project(FiberViewerLight)
-set(LOCAL_PROJECT_NAME FiberViewerLight)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.7)
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+set(Slicer_SKIP_PROJECT_COMMAND ON)
+
+#-----------------------------------------------------------------------------
+set(EXTENSION_NAME FiberViewerLight)
+set(EXTENSION_HOMEPAGE "http://www.slicer.org/slicerWiki/index.php/Documentation/Nightly/Extensions/FiberViewerLight")
+set(EXTENSION_CATEGORY "Diffusion")
+set(EXTENSION_CONTRIBUTORS "Francois Budin (UNC)")
+set(EXTENSION_DESCRIPTION "This extension provides the tool FiberViewerLight integrated in Slicer")
+set(EXTENSION_ICONURL "http://www.nitrc.org/project/list_screenshots.php?group_id=534&screenshot_id=598")
+set(EXTENSION_SCREENSHOTURLS 
+"http://www.nitrc.org/project/list_screenshots.php?group_id=534&screenshot_id=599
+http://www.nitrc.org/project/list_screenshots.php?group_id=534&screenshot_id=597")
+set(EXTENSION_STATUS "Beta")
+set(EXTENSION_DEPENDS "NA") # Specified as a space separated list or 'NA' if any
+set(EXTENSION_BUILD_SUBDIRECTORY fvlight-build)
+
+
+option( FiberViewerLight_BUILD_SLICER_EXTENSION
+        "Build FiberViewerLight as a Slicer extension" OFF )
+if( FiberViewerLight_BUILD_SLICER_EXTENSION )
+  #-----------------------------------------------------------------------------
+  find_package(Slicer REQUIRED)
+  include(${Slicer_USE_FILE})
+  include("${CMAKE_CURRENT_SOURCE_DIR}/SuperBuild.cmake")
+  return()
+endif()
+
+#-----------------------------------------------------------------------------
+set(MODULE_NAME ${EXTENSION_NAME}) # Do not use 'project()'
+set(MODULE_TITLE ${MODULE_NAME})
+
+string(TOUPPER ${MODULE_NAME} MODULE_NAME_UPPER)
+
 
 FIND_PACKAGE(VTK REQUIRED)
 IF (VTK_FOUND)
@@ -113,19 +145,24 @@ set( FVL_LIBRARIES
     INCLUDE_DIRECTORIES ${QT_INCLUDE_DIR} ${FiberViewerLight_BINARY_DIR} ${FiberViewerLight_SOURCE_DIR} ${QWT_INCLUDE_DIR} ${VTK_INCLUDE_DIRS}
     )
 
+if( EXTENSION_SUPERBUILD_BINARY_DIR )
+  set( VTK_DIR_TMP ${VTK_DIR} )
+  unset( VTK_DIR CACHE )
+  unset( VTK_DIR )
+  find_package(Slicer REQUIRED)
+  include(${Slicer_USE_FILE})
+  set( VTK_DIR ${VTK_DIR_TMP} CACHE PATH "VTK PATH" FORCE )
+endif()
+
+IF(BUILD_TESTING)
+  ADD_SUBDIRECTORY(Testing)
+ENDIF(BUILD_TESTING)
 
 if( EXTENSION_SUPERBUILD_BINARY_DIR )
   get_filename_component( QWT_LIB_PATH ${QWT_LIBRARIES} PATH )
   install(DIRECTORY ${QWT_LIB_PATH}/ DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_LIBRARY_DESTINATION} )
   install(PROGRAMS ${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY}/FiberViewerLight DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION})
   install(PROGRAMS ${FiberViewerLight_SOURCE_DIR}/FiberLengthCleaning.py DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION})
-
-  set( VTK_DIR_TMP ${VTK_DIR} )
-  unset( VTK_DIR CACHE )
-  unset( VTK_DIR )
-  set(Slicer_SKIP_PROJECT_COMMAND ON)
-  find_package(Slicer REQUIRED)
-  include(${Slicer_USE_FILE})
-  set( VTK_DIR ${VTK_DIR_TMP} CACHE PATH "VTK PATH" FORCE )
+  set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
   include(${Slicer_EXTENSION_CPACK})
 endif()
