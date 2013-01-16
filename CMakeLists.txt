@@ -10,20 +10,16 @@ set(EXTENSION_CATEGORY "Diffusion")
 set(EXTENSION_CONTRIBUTORS "Francois Budin (UNC)")
 set(EXTENSION_DESCRIPTION "This extension provides the tool FiberViewerLight integrated in Slicer")
 set(EXTENSION_ICONURL "http://www.nitrc.org/project/list_screenshots.php?group_id=534&screenshot_id=598")
-set(EXTENSION_SCREENSHOTURLS 
-"http://www.nitrc.org/project/list_screenshots.php?group_id=534&screenshot_id=599
-http://www.nitrc.org/project/list_screenshots.php?group_id=534&screenshot_id=597")
+set(EXTENSION_SCREENSHOTURLS "http://www.nitrc.org/project/list_screenshots.php?group_id=534&screenshot_id=599 http://www.nitrc.org/project/list_screenshots.php?group_id=534&screenshot_id=597")
 set(EXTENSION_STATUS "Beta")
 set(EXTENSION_DEPENDS "NA") # Specified as a space separated list or 'NA' if any
 set(EXTENSION_BUILD_SUBDIRECTORY fvlight-build)
 
-
+option( BUILD_TESTING
+        "Build the testing tree" ON )
 option( FiberViewerLight_BUILD_SLICER_EXTENSION
         "Build FiberViewerLight as a Slicer extension" OFF )
 if( FiberViewerLight_BUILD_SLICER_EXTENSION )
-  #-----------------------------------------------------------------------------
-  find_package(Slicer REQUIRED)
-  include(${Slicer_USE_FILE})
   include("${CMAKE_CURRENT_SOURCE_DIR}/SuperBuild.cmake")
   return()
 endif()
@@ -137,13 +133,13 @@ set( FVL_LIBRARIES
   ${VTK_LIBRARIES}
 )
 
-  SEMMacroBuildCLI(
-    NAME FiberViewerLight
-    ADDITIONAL_SRCS ${FVLight_source} ${FVLight_header} ${MOC_FILES}
-    TARGET_LIBRARIES ${FVL_LIBRARIES}
-    EXECUTABLE_ONLY
-    INCLUDE_DIRECTORIES ${QT_INCLUDE_DIR} ${FiberViewerLight_BINARY_DIR} ${FiberViewerLight_SOURCE_DIR} ${QWT_INCLUDE_DIR} ${VTK_INCLUDE_DIRS}
-    )
+SEMMacroBuildCLI(
+  NAME FiberViewerLight
+  ADDITIONAL_SRCS ${FVLight_source} ${FVLight_header} ${MOC_FILES}
+  TARGET_LIBRARIES ${FVL_LIBRARIES}
+  EXECUTABLE_ONLY
+  INCLUDE_DIRECTORIES ${QT_INCLUDE_DIR} ${FiberViewerLight_BINARY_DIR} ${FiberViewerLight_SOURCE_DIR} ${QWT_INCLUDE_DIR} ${VTK_INCLUDE_DIRS}
+  )
 
 if( EXTENSION_SUPERBUILD_BINARY_DIR )
   set( VTK_DIR_TMP ${VTK_DIR} )
@@ -155,6 +151,7 @@ if( EXTENSION_SUPERBUILD_BINARY_DIR )
 endif()
 
 IF(BUILD_TESTING)
+  include( CTest )
   ADD_SUBDIRECTORY(Testing)
 ENDIF(BUILD_TESTING)
 
