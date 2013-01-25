@@ -5,9 +5,7 @@ set(verbose FALSE)
 #-----------------------------------------------------------------------------
 
 set( ${LOCAL_PROJECT_NAME}_USE_QT ON )
-unset( SlicerExecutionModel_DIR CACHE )
-unset( VTK_DIR CACHE )
-unset( ITK_DIR CACHE )
+
 option(USE_GIT_PROTOCOL "If behind a firewall turn this off to use http instead." ON)
 set(git_protocol "git")
 if(NOT USE_GIT_PROTOCOL)
@@ -49,8 +47,17 @@ if(PLATFORM_CHECK)
 endif()
 
 
-
-
+#-----------------------------------------------------------------------------
+#set( VTK_DIR_TMP ${VTK_DIR} )
+message(WARNING "Before: "${QT_QMAKE_EXECUTABLE} )
+unsetForSlicer( VERBOSE NAMES VTK_DIR CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER )
+find_package(Slicer REQUIRED)
+include(${Slicer_USE_FILE})
+unsetAllForSlicerBut( VERBOSE NAMES ITK_DIR SlicerExecutionModel_DIR QT_QMAKE_EXECUTABLE )
+resetForSlicer( VERBOSE NAMES VTK_DIR CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER )
+#set( VTK_DIR ${VTK_DIR_TMP} CACHE PATH "VTK PATH" FORCE )
+set( BUILD_SHARED_LIBS OFF)
+message(WARNING "After: "${QT_QMAKE_EXECUTABLE} )
 
 #-----------------------------------------------------------------------------
 # Project dependencies
@@ -188,18 +195,7 @@ endif()
 
 
 
-#-----------------------------------------------------------------------------
-set( VTK_DIR_TMP ${VTK_DIR} )
-unset( VTK_DIR CACHE )
-unset( VTK_DIR )
-unset( ITK_DIR CACHE )
-unset( ITK_DIR )
-unset( SlicerExecutionModel_DIR CACHE )
-unset( SlicerExecutionModel_DIR )
-find_package(Slicer REQUIRED)
-include(${Slicer_USE_FILE})
-set( VTK_DIR ${VTK_DIR_TMP} CACHE PATH "VTK PATH" FORCE )
-set( BUILD_SHARED_LIBS OFF)
+
 #-----------------------------------------------------------------------------
 # Add external project CMake args
 #-----------------------------------------------------------------------------
@@ -210,6 +206,7 @@ list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
   VTK_DIR:PATH
   GenerateCLP_DIR:PATH
   SlicerExecutionModel_DIR:PATH
+  CMAKE_MODULE_PATH:PATH
   )
 
 _expand_external_project_vars()
