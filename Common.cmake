@@ -1,5 +1,5 @@
 include(CMakeDependentOption)
-include( setSlicerConfigVarList )
+
 enable_language(C)
 enable_language(CXX)
 
@@ -46,7 +46,7 @@ set(CMAKE_MODULE_PATH
 #------------------------------------------------------------------------------
 include(PreventInSourceBuilds)
 include(PreventInBuildInstalls)
-
+include( setSlicerConfigVarList )
 #-----------------------------------------------------------------------------
 # CMake Function(s) and Macro(s)
 #-----------------------------------------------------------------------------
