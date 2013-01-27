@@ -15,6 +15,7 @@ if(UNIX)
     endif()
     if(PROCESSOR_COUNT)
       set(BUILD_FLAGS "-j${PROCESSOR_COUNT}")
+    endif()
   endif()
   execute_process(
     COMMAND make ${BUILD_FLAGS}
