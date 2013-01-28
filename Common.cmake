@@ -16,7 +16,7 @@ set(EXTENSION_ICONURL "http://www.nitrc.org/project/list_screenshots.php?group_i
 set(EXTENSION_SCREENSHOTURLS "http://www.nitrc.org/project/list_screenshots.php?group_id=534&screenshot_id=599 http://www.nitrc.org/project/list_screenshots.php?group_id=534&screenshot_id=597")
 set(EXTENSION_STATUS "Beta")
 set(EXTENSION_DEPENDS "NA") # Specified as a space separated list or 'NA' if any
-set(EXTENSION_BUILD_SUBDIRECTORY fvlight-build)
+set(EXTENSION_BUILD_SUBDIRECTORY FiberViewerLight-build)
 
 find_package(Git REQUIRED)
 
