@@ -48,17 +48,12 @@ endif()
 
 
 #-----------------------------------------------------------------------------
-#set( VTK_DIR_TMP ${VTK_DIR} )
-message(WARNING "Before: "${QT_QMAKE_EXECUTABLE} )
-unsetForSlicer( VERBOSE NAMES VTK_DIR CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER )
+unsetForSlicer( NAMES VTK_DIR CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS )
 find_package(Slicer REQUIRED)
 include(${Slicer_USE_FILE})
-unsetAllForSlicerBut( VERBOSE NAMES ITK_DIR SlicerExecutionModel_DIR QT_QMAKE_EXECUTABLE )
-resetForSlicer( VERBOSE NAMES VTK_DIR CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER )
-#set( VTK_DIR ${VTK_DIR_TMP} CACHE PATH "VTK PATH" FORCE )
+unsetAllForSlicerBut( NAMES ITK_DIR SlicerExecutionModel_DIR QT_QMAKE_EXECUTABLE )
+resetForSlicer( NAMES VTK_DIR CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS )
 set( BUILD_SHARED_LIBS OFF)
-message(WARNING "After: "${QT_QMAKE_EXECUTABLE} )
-
 #-----------------------------------------------------------------------------
 # Project dependencies
 #-----------------------------------------------------------------------------
