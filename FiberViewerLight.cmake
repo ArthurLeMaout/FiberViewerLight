@@ -31,13 +31,14 @@ ENDIF(QT_USE_FILE)
 
 # Qwt include directory
 
-FIND_PATH(QWT_INCLUDE_DIR qwt.h
-  ${QWT_INCLUDE_DIR_GIVEN}
-  /usr/local/qwt/include
-  /usr/local/include
-  /usr/include/qwt
-  /usr/include
-)
+if( NOT QWT_INCLUDE_DIR )
+  FIND_PATH(QWT_INCLUDE_DIR qwt.h
+    /usr/local/qwt/include
+    /usr/local/include
+    /usr/include/qwt
+    /usr/include
+  )
+endif()
 
 
 if(NOT QWT_INCLUDE_DIR)
@@ -45,11 +46,13 @@ if(NOT QWT_INCLUDE_DIR)
 endif()
 
 # Qwt libraries
-SET(QWT_NAMES ${QWT_NAMES} qwt libqwt)
-FIND_LIBRARY(QWT_LIBRARY
-  NAMES ${QWT_NAMES}
-  PATHS ${QWT_LIB_PATH} /usr/local/qwt/lib /usr/local/lib /usr/lib
-)
+if( NOT QWT_LIBRARY )
+  SET(QWT_NAMES ${QWT_NAMES} qwt libqwt)
+  FIND_LIBRARY(QWT_LIBRARY
+    NAMES ${QWT_NAMES}
+    PATHS ${QWT_LIBRARY_PATH} /usr/local/qwt/lib /usr/local/lib /usr/lib
+  )
+endif()
 if(NOT QWT_LIBRARY)
   message(FATAL_ERROR "QWT_LIBRARY not found. It should be set to a filepath like '/Projects/qwt-6.0.1-svn/lib/libqwt.a'")
 endif()
