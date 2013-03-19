@@ -48,11 +48,11 @@ endif()
 
 
 #-----------------------------------------------------------------------------
-unsetForSlicer( NAMES VTK_DIR CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS )
+unsetForSlicer( NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS )
 find_package(Slicer REQUIRED)
 include(${Slicer_USE_FILE})
-unsetAllForSlicerBut( NAMES ITK_DIR SlicerExecutionModel_DIR QT_QMAKE_EXECUTABLE )
-resetForSlicer( NAMES VTK_DIR CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS )
+unsetAllForSlicerBut( NAMES VTK_DIR ITK_DIR SlicerExecutionModel_DIR QT_QMAKE_EXECUTABLE )
+resetForSlicer( NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS )
 set( BUILD_SHARED_LIBS OFF)
 #-----------------------------------------------------------------------------
 # Project dependencies
@@ -80,14 +80,13 @@ CMAKE_DEPENDENT_OPTION(
 ########Since is it an extension we do not leave the choice to the user of what is compiled
 #option(USE_SYSTEM_ITK "Build using an externally defined version of ITK" OFF)
 #option(USE_SYSTEM_SlicerExecutionModel "Build using an externally defined version of SlicerExecutionModel"  OFF)
-#option(USE_SYSTEM_VTK "Build using an externally defined version of VTK" ON)
+#option(USE_SYSTEM_VTK "Build using an externally defined version of VTK" OFF)
 
-set(USE_SYSTEM_VTK OFF)
 #------------------------------------------------------------------------------
 # ${LOCAL_PROJECT_NAME} dependency list
 #------------------------------------------------------------------------------
 
-set(${LOCAL_PROJECT_NAME}_DEPENDENCIES VTK QWT)
+set(${LOCAL_PROJECT_NAME}_DEPENDENCIES QWT)
 
 if(BUILD_STYLE_UTILS)
   list(APPEND ${LOCAL_PROJECT_NAME}_DEPENDENCIES Cppcheck KWStyle Uncrustify)

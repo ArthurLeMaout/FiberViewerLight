@@ -7,8 +7,6 @@ string(TOUPPER ${MODULE_NAME} MODULE_NAME_UPPER)
 
 FIND_PACKAGE(VTK REQUIRED)
 IF (VTK_FOUND)
-#  SET(VTK_USE_QVTK TRUE)
-#  SET(VTK_USE_GUISUPPORT TRUE)
   INCLUDE(${VTK_USE_FILE})
 ELSE(VTK_FOUND)
    MESSAGE(FATAL_ERROR, "VTK not found. Please set VTK_DIR.")
@@ -23,7 +21,6 @@ ENDIF(ITK_FOUND)
 
 FIND_PACKAGE(Qt4 REQUIRED)
 IF(QT_USE_FILE)
-  INCLUDE_DIRECTORIES(${QT_INCLUDE_DIR})
   INCLUDE(${QT_USE_FILE})
 ELSE(QT_USE_FILE)
    MESSAGE(FATAL_ERROR, "QT not found. Please set QT_DIR.")
@@ -67,37 +64,9 @@ QT4_WRAP_CPP(MOC_FILES FiberViewerLightGUI.h FVLengthGUI.h FVDistributionGUI.h F
 SET(FVLight_source FiberViewerLight.cxx FiberViewerLightGUI.cxx FiberDisplay.cxx FVLengthGUI.cxx  FVDistributionGUI.cxx FVPanelGUI.cxx FVDisplayClassGUI.cxx FVNormalizedCutGUI.cxx PlanSetting.cxx FVCutterGUI.cxx ${MOC_FILES})
 SET(FVLight_header FiberViewerLightGUI.h FiberDisplay.h FVLengthGUI.h FVDistributionGUI.h FVPanelGUI.h FVDisplayClassGUI.h FVNormalizedCutGUI.h PlanSetting.h FVCutterGUI.h)
 
-# GENERATECLP(FiberViewerLight.cxx FiberViewerLight.xml)
-#add_executable( FiberViewerLight ${FVLight_source} ${FVLight_header})
-
 set(VTK_LIBRARIES 
-  vtkWidgets
-  vtkRendering
-  vtkGraphics
-  vtkImaging
-  vtkIO
-  vtkFiltering
-  vtkCommon
-  vtkHybrid
-  vtksys
+  ${VTK_LIBRARIES}
   QVTK
-  vtkQtChart
-  vtkViews
-  vtkInfovis
-  vtklibxml2
-  vtkDICOMParser
-  vtkpng
-  vtkzlib
-  vtkjpeg
-  vtkalglib
-  vtkexpat
-  vtkverdict
-  vtkmetaio
-  vtkNetCDF
-  vtksqlite
-  vtkexoIIc
-  vtkftgl
-  vtkfreetype
 )
 
 set( FVL_LIBRARIES 
@@ -111,17 +80,13 @@ SEMMacroBuildCLI(
   NAME FiberViewerLight
   ADDITIONAL_SRCS ${FVLight_source} ${FVLight_header} ${MOC_FILES}
   TARGET_LIBRARIES ${FVL_LIBRARIES}
-  EXECUTABLE_ONLY
+  LINK_DIRECTORIES ${VTK_LIBRARY_DIRS}
   INCLUDE_DIRECTORIES ${QT_INCLUDE_DIR} ${FiberViewerLight_BINARY_DIR} ${FiberViewerLight_SOURCE_DIR} ${QWT_INCLUDE_DIR} ${VTK_INCLUDE_DIRS}
   )
 
 if( EXTENSION_SUPERBUILD_BINARY_DIR )
-  set( VTK_DIR_TMP ${VTK_DIR} )
-  unset( VTK_DIR CACHE )
-  unset( VTK_DIR )
   find_package(Slicer REQUIRED)
   include(${Slicer_USE_FILE})
-  set( VTK_DIR ${VTK_DIR_TMP} CACHE PATH "VTK PATH" FORCE )
 endif()
 
 IF(BUILD_TESTING)
@@ -130,11 +95,6 @@ IF(BUILD_TESTING)
 ENDIF(BUILD_TESTING)
 
 if( EXTENSION_SUPERBUILD_BINARY_DIR )
-  if(APPLE)
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/InstallApple/lib DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/..)
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/InstallApple/Frameworks DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/..)
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/InstallApple/AppleCreateLinkLibs.sh DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/../share)
-  endif(APPLE)
   install(PROGRAMS ${FiberViewerLight_SOURCE_DIR}/FiberLengthCleaning.py DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION})
   set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
   include(${Slicer_EXTENSION_CPACK})
