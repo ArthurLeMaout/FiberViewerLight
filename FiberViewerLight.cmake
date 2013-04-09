@@ -1,9 +1,13 @@
+
 #-----------------------------------------------------------------------------
 set(MODULE_NAME ${EXTENSION_NAME}) # Do not use 'project()'
 set(MODULE_TITLE ${MODULE_NAME})
 
 string(TOUPPER ${MODULE_NAME} MODULE_NAME_UPPER)
 
+if( NOT RUNTIME_OUTPUT_DIRECTORY )
+  set( RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )
+endif()
 
 FIND_PACKAGE(VTK REQUIRED)
 IF (VTK_FOUND)
@@ -58,6 +62,13 @@ set(QWT_LIBRARIES ${QWT_LIBRARY})
 find_package(SlicerExecutionModel REQUIRED)
 include(${SlicerExecutionModel_USE_FILE})
 
+if( EXTENSION_SUPERBUILD_BINARY_DIR )
+  if( NOT UNIX )
+    include(${GenerateCLP_USE_FILE})
+    generateclp(Launcher_CLP FiberViewerLight.xml )
+    add_executable( FiberViewerLightLauncher Launcher.cxx ${Launcher_CLP} )
+  endif()
+endif()
 
 QT4_WRAP_CPP(MOC_FILES FiberViewerLightGUI.h FVLengthGUI.h FVDistributionGUI.h FVPanelGUI.h FVDisplayClassGUI.h FVCutterGUI.h FVNormalizedCutGUI.h PlanSetting.h FiberDisplay.h)
 
@@ -78,7 +89,9 @@ set( FVL_LIBRARIES
 
 SEMMacroBuildCLI(
   NAME FiberViewerLight
+  EXECUTABLE_ONLY
   ADDITIONAL_SRCS ${FVLight_source} ${FVLight_header} ${MOC_FILES}
+  RUNTIME_OUTPUT_DIRECTORY ${RUNTIME_OUTPUT_DIRECTORY}
   TARGET_LIBRARIES ${FVL_LIBRARIES}
   LINK_DIRECTORIES ${VTK_LIBRARY_DIRS}
   INCLUDE_DIRECTORIES ${QT_INCLUDE_DIR} ${FiberViewerLight_BINARY_DIR} ${FiberViewerLight_SOURCE_DIR} ${QWT_INCLUDE_DIR} ${VTK_INCLUDE_DIRS}
@@ -95,7 +108,10 @@ IF(BUILD_TESTING)
 ENDIF(BUILD_TESTING)
 
 if( EXTENSION_SUPERBUILD_BINARY_DIR )
-  install(PROGRAMS ${FiberViewerLight_SOURCE_DIR}/FiberLengthCleaning.py DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION})
+  install(PROGRAMS ${FiberViewerLight_SOURCE_DIR}/FiberLengthCleaning.py DESTINATION ${CLI_INSTALL_DIRECTORY})
+  if( NOT UNIX )
+    install(TARGETS FiberViewerLightLauncher DESTINATION ${CLI_INSTALL_DIRECTORY})
+  endif()
   set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
   include(${Slicer_EXTENSION_CPACK})
 endif()
