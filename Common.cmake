@@ -5,7 +5,6 @@ enable_language(CXX)
 
 
 
-set(Slicer_SKIP_PROJECT_COMMAND ON)
 #-----------------------------------------------------------------------------
 set(EXTENSION_NAME FiberViewerLight)
 set(EXTENSION_HOMEPAGE "http://www.slicer.org/slicerWiki/index.php/Documentation/Nightly/Extensions/FiberViewerLight")

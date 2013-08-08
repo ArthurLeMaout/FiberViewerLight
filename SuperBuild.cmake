@@ -161,6 +161,7 @@ list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
   CMAKE_MODULE_LINKER_FLAGS:STRING
   SITE:STRING
   BUILDNAME:STRING
+  Subversion_SVN_EXECUTABLE:FILEPATH
   )
 
 if(${LOCAL_PROJECT_NAME}_USE_QT)
@@ -222,6 +223,7 @@ if(verbose)
     message("  ${argname}")
   endforeach()
 endif()
+
 
 #------------------------------------------------------------------------------
 # Configure and build
