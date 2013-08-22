@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
 	{
 		FiberViewerLightGUI* GUIWin=new FiberViewerLightGUI(nogui,input,output);
 		GUIWin->show();
-		
+        GUIWin->raise();
 		return app.exec();
 	}
 	else

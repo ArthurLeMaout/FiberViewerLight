@@ -78,9 +78,9 @@ void FiberViewerLightGUI::InitWidgets()
 		m_PlanSetting=new PlanSetting(this, m_Display);
 		m_PlanSetting->hide();
 		
-		m_GB_ActionPanel=new QGroupBox("Fiber Viewer Light 1.2");
+        m_GB_ActionPanel=new QGroupBox("Fiber Viewer Light 1.21");
 		m_GB_ActionPanel->setMinimumSize(350,620);
-		m_GB_ActionPanel->setMaximumSize(350,620);
+        m_GB_ActionPanel->setMaximumSize(350,800);
 		
 		m_GB_LengthPanel=new QGroupBox("Length");
 		m_GB_LengthPanel->setMinimumSize(350,480);
@@ -106,24 +106,24 @@ void FiberViewerLightGUI::InitWidgets()
 		m_ProgressBar=new QProgressBar;
 		m_ProgressBar->setValue(0);
 		m_LE_VTKInput=new QLineEdit(this);
-		m_LE_VTKInput->setMaximumHeight(20);
+        m_LE_VTKInput->setMaximumHeight(20);
 		m_LE_OutputFolder=new QLineEdit(this);
-		m_LE_OutputFolder->setMaximumHeight(20);
+        m_LE_OutputFolder->setMaximumHeight(20);
 		m_LE_NbVoxelX=new QLineEdit(this);
 		m_LE_NbVoxelX->setEnabled(false);
-		m_LE_NbVoxelX->setMaximumHeight(20);
+        m_LE_NbVoxelX->setMaximumHeight(20);
 		m_LE_NbVoxelY=new QLineEdit(this);
 		m_LE_NbVoxelY->setEnabled(false);
-		m_LE_NbVoxelY->setMaximumHeight(20);
+        m_LE_NbVoxelY->setMaximumHeight(20);
 		m_LE_NbVoxelZ=new QLineEdit(this);
 		m_LE_NbVoxelZ->setEnabled(false);
 		m_LE_NbVoxelZ->setMaximumHeight(20);
 		m_TB_BrowserVTKInput=new QToolButton(this);
 		m_TB_BrowserVTKInput->setText("...");
-		m_TB_BrowserVTKInput->setMaximumHeight(20);
+        m_TB_BrowserVTKInput->setMaximumHeight(20);
 		m_TB_BrowserOutput=new QToolButton(this);
 		m_TB_BrowserOutput->setText("...");
-		m_TB_BrowserOutput->setMaximumHeight(20);
+        m_TB_BrowserOutput->setMaximumHeight(20);
 		m_L_VTKInput=new QLabel("VTK Input", this);
 		m_L_OutputFolder=new QLabel("Output Folder", this);
 		m_L_NbVoxel=new QLabel("Nb Voxels", this);

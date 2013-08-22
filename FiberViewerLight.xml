@@ -5,8 +5,10 @@
 	<description>
 		Light Version of FiberViewer. Used for Fiber Clustering thanks to methods such as Length, Gravity, Hausdorff, or Mean Distribution and Normalized Cut.
 	</description>
-	<contributor>Jean-Baptiste Berger, Clement Vachet, Martin Styner</contributor>
-	
+        <contributor>Jean-Baptiste Berger, Clement Vachet, Francois Budin, Martin Styner</contributor>
+        <version>1.21</version>
+        <acknowledgements><![CDATA[This work is part of the National Alliance for Medical Image Computing (NAMIC), funded by the National Institutes of Health through the NIH Roadmap for Medical Research, Grant U54 EB005149.]]></acknowledgements>
+        <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/Nightly/Extensions/FiberViewerLight</documentation-url>
 	<parameters>
 		<geometry type = "fiberbundle">
 			<name>input</name>
