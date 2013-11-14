@@ -4,7 +4,7 @@ ExternalProject_Add(FVLight
   BINARY_DIR FVLight-build
   SVN_USERNAME slicerbot
   SVN_PASSWORD slicer
-  "${cmakeversion_external_update}"
+  ${cmakeversion_external_update} "${cmakeversion_external_update_value}"
   INSTALL_COMMAND ""
   PATCH_COMMAND ${CMAKE_COMMAND}
     -Dfixfile=${CMAKE_CURRENT_BINARY_DIR}/FVLight/CMakeLists.txt
@@ -14,10 +14,11 @@ ExternalProject_Add(FVLight
     --no-warn-unused-cli # HACK Only expected variables should be passed down.
     ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
     ${COMMON_EXTERNAL_PROJECT_ARGS}
-    -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
+    -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
+    -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
     -DQWT_LIBRARY:PATH=${QWT_LIBRARY}
     -DQWT_INCLUDE_DIR:PATH=${QWT_INCLUDE_DIR}
-    DEPENDS ${ITK_EXTERNAL_NAME} VTK QWT
+    DEPENDS ITKv4 VTK QWT
   )
 
 ## Force rebuilding of the main subproject every time building from super structure

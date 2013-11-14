@@ -4,7 +4,6 @@ enable_language(C)
 enable_language(CXX)
 
 
-
 #-----------------------------------------------------------------------------
 set(EXTENSION_NAME FiberViewerLight)
 set(EXTENSION_HOMEPAGE "http://www.slicer.org/slicerWiki/index.php/Documentation/Nightly/Extensions/FiberViewerLight")
@@ -17,20 +16,32 @@ set(EXTENSION_STATUS "Beta")
 set(EXTENSION_DEPENDS "NA") # Specified as a space separated list or 'NA' if any
 set(EXTENSION_BUILD_SUBDIRECTORY FiberViewerLight-build)
 
-find_package(Git REQUIRED)
-
 option( BUILD_TESTING   "Build the testing tree" ON )
 
 
-# With CMake 2.8.9 or later, the UPDATE_COMMAND is required for updates to occur.
-# For earlier versions, we nullify the update state to prevent updates and
-# undesirable rebuild.
-if(CMAKE_VERSION VERSION_LESS 2.8.9)
-  set(cmakeversion_external_update UPDATE_COMMAND "")
-else()
-  set(cmakeversion_external_update LOG_UPDATE 1)
+set(ITK_VERSION_MAJOR 4 CACHE STRING "Choose the expected ITK major version to build DTIPrep (3 or 4).")
+# Set the possible values of ITK major version for cmake-gui
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+if(NOT ${ITK_VERSION_MAJOR} STREQUAL "3" AND NOT ${ITK_VERSION_MAJOR} STREQUAL "4")
+  message(FATAL_ERROR "ITK_VERSION_MAJOR should be either 3 or 4")
 endif()
- 
+
+set(USE_ITKv3 OFF)
+set(USE_ITKv4 ON)
+if(${ITK_VERSION_MAJOR} STREQUAL "3")
+  set(USE_ITKv3 ON)
+  set(USE_ITKv4 OFF)
+endif()
+
+set(${LOCAL_PROJECT_NAME}_USE_QT ON)
+if(${LOCAL_PROJECT_NAME}_USE_QT AND NOT DTIPrep_BUILD_SLICER_EXTENSION )
+  if(NOT QT4_FOUND)
+    find_package(Qt4 4.6 COMPONENTS QtCore QtGui QtNetwork QtXml REQUIRED)
+    include(${QT_USE_FILE})
+  endif()
+endif()
+
+
 #-----------------------------------------------------------------------------
 # Update CMake module path
 #------------------------------------------------------------------------------
@@ -55,6 +66,41 @@ else()
   include(CMakeParseArguments)
 endif()
 
+#-----------------------------------------------------------------------------
+# Platform check
+#-----------------------------------------------------------------------------
+set(PLATFORM_CHECK true)
+if(PLATFORM_CHECK)
+  # See CMake/Modules/Platform/Darwin.cmake)
+  #   6.x == Mac OSX 10.2 (Jaguar)
+  #   7.x == Mac OSX 10.3 (Panther)
+  #   8.x == Mac OSX 10.4 (Tiger)
+  #   9.x == Mac OSX 10.5 (Leopard)
+  #  10.x == Mac OSX 10.6 (Snow Leopard)
+  if (DARWIN_MAJOR_VERSION LESS "9")
+    message(FATAL_ERROR "Only Mac OSX >= 10.5 are supported !")
+  endif()
+endif()
+
+#-----------------------------------------------------------------------------
+# Set a default build type if none was specified
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  message(STATUS "Setting build type to 'Release' as none was specified.")
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+  # Set the possible values of build type for cmake-gui
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()
+
+#-----------------------------------------------------------------------------
+if(NOT COMMAND SETIFEMPTY)
+  macro(SETIFEMPTY)
+    set(KEY ${ARGV0})
+    set(VALUE ${ARGV1})
+    if(NOT ${KEY})
+      set(${ARGV})
+    endif()
+  endmacro()
+endif()
 #-------------------------------------------------------------------------
 # Augment compiler flags
 #-------------------------------------------------------------------------

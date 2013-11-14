@@ -1,5 +1,4 @@
-#-----------------------------------------------------------------------------
-set(LOCAL_PROJECT_NAME FiberViewerLight)
+
 #-----------------------------------------------------------------------------
 set(verbose FALSE)
 #-----------------------------------------------------------------------------
@@ -28,31 +27,32 @@ else()
   set(gen "${CMAKE_GENERATOR}")
 endif()
 
-#-----------------------------------------------------------------------------
-# Platform check
-#-----------------------------------------------------------------------------
-
-set(PLATFORM_CHECK true)
-
-if(PLATFORM_CHECK)
-  # See CMake/Modules/Platform/Darwin.cmake)
-  #   6.x == Mac OSX 10.2 (Jaguar)
-  #   7.x == Mac OSX 10.3 (Panther)
-  #   8.x == Mac OSX 10.4 (Tiger)
-  #   9.x == Mac OSX 10.5 (Leopard)
-  #  10.x == Mac OSX 10.6 (Snow Leopard)
-  if (DARWIN_MAJOR_VERSION LESS "9")
-    message(FATAL_ERROR "Only Mac OSX >= 10.5 are supported !")
-  endif()
+# With CMake 2.8.9 or later, the UPDATE_COMMAND is required for updates to occur.
+# For earlier versions, we nullify the update state to prevent updates and
+# undesirable rebuild.
+option(FORCE_EXTERNAL_BUILDS "Force rebuilding of external project (if they are updated)" OFF)
+if(CMAKE_VERSION VERSION_LESS 2.8.9 OR NOT FORCE_EXTERNAL_BUILDS)
+  set(cmakeversion_external_update UPDATE_COMMAND)
+  set(cmakeversion_external_update_value "" )
+else()
+  set(cmakeversion_external_update LOG_UPDATE )
+  set(cmakeversion_external_update_value 1)
 endif()
 
-
-#-----------------------------------------------------------------------------
-unsetForSlicer( NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS )
-find_package(Slicer REQUIRED)
-include(${Slicer_USE_FILE})
-unsetAllForSlicerBut( NAMES VTK_DIR ITK_DIR SlicerExecutionModel_DIR QT_QMAKE_EXECUTABLE )
-resetForSlicer( NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS )
+if( FiberViewerLight_BUILD_SLICER_EXTENSION )
+  set( USE_SYSTEM_QWT ON CACHE BOOL "Use system QWT" FORCE )
+  set( USE_SYSTEM_VTK ON CACHE BOOL "Use system VTK" FORCE )
+  set( USE_SYSTEM_ITK ON CACHE BOOL "Use system ITK" FORCE)
+  set( USE_SYSTEM_SlicerExecutionModel ON CACHE BOOL "Use system SliceExecutionModel" FORCE)
+  unsetForSlicer( NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS )
+  find_package(Slicer REQUIRED)
+  include(${Slicer_USE_FILE})
+  unsetAllForSlicerBut( NAMES VTK_DIR ITK_DIR SlicerExecutionModel_DIR QT_QMAKE_EXECUTABLE )
+  resetForSlicer( NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS )
+  set( EXTENSION_SUPERBUILD_BINARY_DIR_VALUE EXTENSION_SUPERBUILD_BINARY_DIR:PATH=${${EXTENSION_NAME}_BINARY_DIR} )
+else()
+  set( EXTENSION_SUPERBUILD_BINARY_DIR_VALUE "" )
+endif()
 set( BUILD_SHARED_LIBS OFF)
 #-----------------------------------------------------------------------------
 # Project dependencies
@@ -78,15 +78,17 @@ CMAKE_DEPENDENT_OPTION(
 
 
 ########Since is it an extension we do not leave the choice to the user of what is compiled
-#option(USE_SYSTEM_ITK "Build using an externally defined version of ITK" OFF)
-#option(USE_SYSTEM_SlicerExecutionModel "Build using an externally defined version of SlicerExecutionModel"  OFF)
-#option(USE_SYSTEM_VTK "Build using an externally defined version of VTK" OFF)
+option(USE_SYSTEM_ITK "Build using an externally defined version of ITK" OFF)
+option(USE_SYSTEM_SlicerExecutionModel "Build using an externally defined version of SlicerExecutionModel"  OFF)
+option(USE_SYSTEM_VTK "Build using an externally defined version of VTK" OFF)
+option(USE_SYSTEM_QWT "Build using an externally defined version of QWT" OFF)
 
 #------------------------------------------------------------------------------
 # ${LOCAL_PROJECT_NAME} dependency list
 #------------------------------------------------------------------------------
 
-set(${LOCAL_PROJECT_NAME}_DEPENDENCIES QWT)
+set(${LOCAL_PROJECT_NAME}_DEPENDENCIES ITKv4 SlicerExecutionModel VTK QWT)
+
 
 if(BUILD_STYLE_UTILS)
   list(APPEND ${LOCAL_PROJECT_NAME}_DEPENDENCIES Cppcheck KWStyle Uncrustify)
@@ -175,6 +177,8 @@ endif()
 
 _expand_external_project_vars()
 set(COMMON_EXTERNAL_PROJECT_ARGS ${${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_ARGS})
+set(extProjName ${LOCAL_PROJECT_NAME})
+set(proj        ${LOCAL_PROJECT_NAME})
 SlicerMacroCheckExternalProjectDependency(${LOCAL_PROJECT_NAME})
 
 #-----------------------------------------------------------------------------
@@ -228,13 +232,23 @@ endif()
 #------------------------------------------------------------------------------
 # Configure and build
 #------------------------------------------------------------------------------
-if( WIN32 OR APPLE )
-  set( CLI_INSTALL_LIBRARY_DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_LIBRARY_DESTINATION}/../hidden-cli-modules )
-  set( CLI_INSTALL_RUNTIME_DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/../hidden-cli-modules )
+
+if( FiberViewerLight_BUILD_SLICER_EXTENSION )
+  if( WIN32 OR APPLE )
+    set( CLI_INSTALL_LIBRARY_DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_LIBRARY_DESTINATION}/../hidden-cli-modules )
+    set( CLI_INSTALL_RUNTIME_DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/../hidden-cli-modules )
+    set( CLI_INSTALL_ARCHIVE_DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/../lib )
+  else()
+    set( CLI_INSTALL_LIBRARY_DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_LIBRARY_DESTINATION} )
+    set( CLI_INSTALL_RUNTIME_DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION} )
+    set( CLI_INSTALL_ARCHIVE_DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_ARCHIVE_DESTINATION} )
+  endif()
 else()
-  set( CLI_INSTALL_LIBRARY_DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_LIBRARY_DESTINATION} )
-  set( CLI_INSTALL_RUNTIME_DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION} )
+  set( CLI_INSTALL_RUNTIME_DESTINATION bin )
+  set( CLI_INSTALL_LIBRARY_DESTINATION lib )
+  set( CLI_INSTALL_ARCHIVE_DESTINATION lib )
 endif()
+
 
   set(proj ${LOCAL_PROJECT_NAME})
   ExternalProject_Add(${proj}
@@ -247,13 +261,15 @@ endif()
       -DCLI_INSTALL_DIRECTORY:PATH=${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}
       -DSlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION:PATH=${CLI_INSTALL_RUNTIME_DESTINATION}
       -DSlicerExecutionModel_DEFAULT_CLI_INSTALL_LIBRARY_DESTINATION:PATH=${CLI_INSTALL_LIBRARY_DESTINATION}
+      -DSlicerExecutionModel_DEFAULT_CLI_INSTALL_ARCHIVE_DESTINATION:PATH=${CLI_INSTALL_ARCHIVE_DESTINATION}
       -DQWT_LIBRARY_PATH:FILEPATH=${QWT_LIBRARY_PATH}
       -DQWT_INCLUDE_DIR:PATH=${QWT_INCLUDE_DIR}
       -DMIDAS_PACKAGE_EMAIL:STRING=${MIDAS_PACKAGE_EMAIL}
       -DMIDAS_PACKAGE_API_KEY:STRING=${MIDAS_PACKAGE_API_KEY}
       -DDTIProcess_BUILD_SLICER_EXTENSION:BOOL=OFF
       -DEXTENSION_NAME:STRING=${EXTENSION_NAME}
-      -DEXTENSION_SUPERBUILD_BINARY_DIR:PATH=${${EXTENSION_NAME}_BINARY_DIR}
+      ${EXTENSION_SUPERBUILD_BINARY_DIR_VALUE}
+      -D${LOCAL_PROJECT_NAME}_SUPERBUILD:BOOL=OFF
       ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
       ${COMMON_EXTERNAL_PROJECT_ARGS}
       # Slicer

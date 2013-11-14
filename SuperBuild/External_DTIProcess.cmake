@@ -1,9 +1,9 @@
 
-set(DTIProcess_DEPENDS ${ITK_EXTERNAL_NAME} VTK SlicerExecutionModel Boost)
+set(DTIProcess_DEPENDS ITKv4 VTK SlicerExecutionModel Boost)
 
 ExternalProject_Add(DTIProcess
   SVN_REPOSITORY "https://www.nitrc.org/svn/dtiprocess/trunk"
-  SVN_REVISION -r "87"
+  SVN_REVISION -r "199"
   SVN_USERNAME slicerbot
   SVN_PASSWORD slicer
   SOURCE_DIR DTIProcess
@@ -17,7 +17,8 @@ ExternalProject_Add(DTIProcess
   -DBOOST_INCLUDE_DIR:PATH=${BOOST_INCLUDE_DIR}
   -DBOOST_INCLUDEDIR:PATH=${BOOST_INCLUDE_DIR}
   -DBUILD_dwiAtlas:BOOL=ON
-  "${cmakeversion_external_update}"
+  -DEXECUTABLES_ONLY:BOOL=ON
+  ${cmakeversion_external_update} "${cmakeversion_external_update_value}"
   INSTALL_COMMAND ""
   )
 
