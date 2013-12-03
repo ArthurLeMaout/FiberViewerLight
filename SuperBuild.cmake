@@ -39,12 +39,14 @@ else()
   set(cmakeversion_external_update_value 1)
 endif()
 
+set( ${LOCAL_PROJECT_NAME}_DEPENDENCIES QWT )
+
 if( FiberViewerLight_BUILD_SLICER_EXTENSION )
-  set( USE_SYSTEM_QWT ON CACHE BOOL "Use system QWT" FORCE )
+  set( USE_SYSTEM_QWT OFF CACHE BOOL "Use system QWT" FORCE )
   set( USE_SYSTEM_VTK ON CACHE BOOL "Use system VTK" FORCE )
   set( USE_SYSTEM_ITK ON CACHE BOOL "Use system ITK" FORCE)
   set( USE_SYSTEM_SlicerExecutionModel ON CACHE BOOL "Use system SliceExecutionModel" FORCE)
-  unsetForSlicer( NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS )
+  unsetForSlicer( NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS QT_QMAKE_EXECUTABLE )
   find_package(Slicer REQUIRED)
   include(${Slicer_USE_FILE})
   unsetAllForSlicerBut( NAMES VTK_DIR ITK_DIR SlicerExecutionModel_DIR QT_QMAKE_EXECUTABLE )
@@ -52,6 +54,7 @@ if( FiberViewerLight_BUILD_SLICER_EXTENSION )
   set( SUPERBUILD_NOT_EXTENSION FALSE )
 else()
   set( SUPERBUILD_NOT_EXTENSION TRUE )
+  list(APPEND ${LOCAL_PROJECT_NAME}_DEPENDENCIES ITKv4 SlicerExecutionModel VTK )
 endif()
 set( BUILD_SHARED_LIBS OFF)
 #-----------------------------------------------------------------------------
@@ -86,8 +89,6 @@ option(USE_SYSTEM_QWT "Build using an externally defined version of QWT" OFF)
 #------------------------------------------------------------------------------
 # ${LOCAL_PROJECT_NAME} dependency list
 #------------------------------------------------------------------------------
-
-set(${LOCAL_PROJECT_NAME}_DEPENDENCIES ITKv4 SlicerExecutionModel VTK QWT)
 
 
 if(BUILD_STYLE_UTILS)
