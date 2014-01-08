@@ -43,8 +43,8 @@ if(NOT QWT_INCLUDE_DIR)
 endif()
 
 # Qwt libraries
-if( NOT QWT_LIBRARY )
-  if( EXTENSION_SUPERBUILD_BINARY_DIR OR ${SUPERBUILD_NOT_EXTENSION} )
+if( NOT QWT_LIBRARY OR QWT_LIBRARY_PATH )
+  if( EXTENSION OR SUPERBUILD_NOT_EXTENSION )
     set(NO_ENV_PATH "NO_DEFAULT_PATH")
   endif()
   SET(QWT_NAMES ${QWT_NAMES} qwt libqwt)
@@ -62,7 +62,7 @@ set(QWT_LIBRARIES ${QWT_LIBRARY})
 find_package(SlicerExecutionModel REQUIRED)
 include(${SlicerExecutionModel_USE_FILE}) 
 
-if( EXTENSION_SUPERBUILD_BINARY_DIR )
+if( EXTENSION )
   if( APPLE )
     set( CMAKE_EXE_LINKER_FLAGS -Wl,-rpath,@loader_path/../../../../../)
   endif()
@@ -102,7 +102,7 @@ SEMMacroBuildCLI(
   INCLUDE_DIRECTORIES ${QT_INCLUDE_DIR} ${FiberViewerLight_BINARY_DIR} ${FiberViewerLight_SOURCE_DIR} ${QWT_INCLUDE_DIR} ${VTK_INCLUDE_DIRS}
   )
 
-if( EXTENSION_SUPERBUILD_BINARY_DIR )
+if( EXTENSION )
   find_package(Slicer REQUIRED)
   include(${Slicer_USE_FILE})
 endif()
@@ -112,7 +112,7 @@ IF(BUILD_TESTING)
   ADD_SUBDIRECTORY(Testing)
 ENDIF(BUILD_TESTING)
 
-if( EXTENSION_SUPERBUILD_BINARY_DIR )
+if( EXTENSION )
   if( WIN32 OR APPLE )
     install(TARGETS FiberViewerLightLauncher DESTINATION ${CLI_INSTALL_DIRECTORY})
   endif()

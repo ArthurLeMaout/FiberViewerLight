@@ -48,7 +48,12 @@ if( FiberViewerLight_BUILD_SLICER_EXTENSION )
   set( USE_SYSTEM_SlicerExecutionModel ON CACHE BOOL "Use system SliceExecutionModel" FORCE)
   unsetForSlicer( NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS QT_QMAKE_EXECUTABLE )
   find_package(Slicer REQUIRED)
-  include(${Slicer_USE_FILE})
+  #When the following line is commented out, EXTENSION_SUPERBUILD_BINARY_DIR is not defined anymore.
+  #Instead, we define the variable EXTENSION to let the inner build directory know that we are 
+  #building FiberViewerLight as an extension
+  #We also remove 'EXTENSION_SUPERBUILD_BINARY_DIR:PATH' from 'list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS'
+  #include(${Slicer_USE_FILE})
+  set(EXTENSION TRUE)
   unsetAllForSlicerBut( NAMES VTK_DIR ITK_DIR SlicerExecutionModel_DIR QT_QMAKE_EXECUTABLE )
   resetForSlicer( NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS )
   set( SUPERBUILD_NOT_EXTENSION FALSE )
@@ -207,7 +212,7 @@ list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
   GenerateCLP_DIR:PATH
   SlicerExecutionModel_DIR:PATH
   CMAKE_MODULE_PATH:PATH
-  EXTENSION_SUPERBUILD_BINARY_DIR:PATH
+  EXTENSION:BOOL
   SUPERBUILD_NOT_EXTENSION:BOOL
   EXTENSION_NAME:STRING
   Slicer_DIR:PATH
@@ -257,7 +262,6 @@ else()
   set( CLI_INSTALL_LIBRARY_DESTINATION lib )
   set( CLI_INSTALL_ARCHIVE_DESTINATION lib )
 endif()
-
 
   set(proj ${LOCAL_PROJECT_NAME})
   ExternalProject_Add(${proj}

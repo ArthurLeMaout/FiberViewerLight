@@ -1,7 +1,6 @@
 project(FiberViewerLight)
 cmake_minimum_required(VERSION 2.8.7)
 
-#-----------------------------------------------------------------------------
 set(LOCAL_PROJECT_NAME FiberViewerLight)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/Common.cmake)
