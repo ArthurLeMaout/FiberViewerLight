@@ -1,4 +1,12 @@
-
+#-----------------------------------------------------------------------------
+###Unset those variables which may have been set by the first pass of CMake configuration
+###with SuperBuild set to ON
+unset( USE_SYSTEM_ITK CACHE )
+unset( USE_SYSTEM_VTK CACHE )
+unset( USE_SYSTEM_SlicerExecutionModel CACHE )
+unset( USE_SYSTEM_QWT CACHE )
+unset( VTK_GIT_TAG CACHE )
+unset( VTK_REPOSITORY CACHE )
 #-----------------------------------------------------------------------------
 set(MODULE_NAME ${EXTENSION_NAME}) # Do not use 'project()'
 set(MODULE_TITLE ${MODULE_NAME})
@@ -17,6 +25,9 @@ IF (VTK_FOUND)
 ELSE(VTK_FOUND)
    MESSAGE(FATAL_ERROR, "VTK not found. Please set VTK_DIR.")
 ENDIF (VTK_FOUND)
+
+find_package(SlicerExecutionModel REQUIRED)
+include(${SlicerExecutionModel_USE_FILE}) 
 
 FIND_PACKAGE(ITK REQUIRED)
 IF(ITK_FOUND)
@@ -59,8 +70,6 @@ if(NOT QWT_LIBRARY)
 endif()
 set(QWT_LIBRARIES ${QWT_LIBRARY})
 
-find_package(SlicerExecutionModel REQUIRED)
-include(${SlicerExecutionModel_USE_FILE}) 
 
 if( EXTENSION )
   if( APPLE )
