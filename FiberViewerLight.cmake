@@ -80,6 +80,12 @@ if( EXTENSION )
     generateclp(Launcher_CLP FiberViewerLight.xml )
     add_executable( FiberViewerLightLauncher Launcher.cxx ${Launcher_CLP} )
   endif()
+else()
+  set( INSTALL_RULES
+       INSTALL_RUNTIME_DESTINATION bin
+       INSTALL_LIBRARY_DESTINATION lib
+       INSTALL_ARCHIVE_DESTINATION lib
+     )
 endif()
 
 QT4_WRAP_CPP(MOC_FILES FiberViewerLightGUI.h FVLengthGUI.h FVDistributionGUI.h FVPanelGUI.h FVDisplayClassGUI.h FVCutterGUI.h FVNormalizedCutGUI.h PlanSetting.h FiberDisplay.h)
@@ -109,6 +115,7 @@ SEMMacroBuildCLI(
   TARGET_LIBRARIES ${FVL_LIBRARIES}
   LINK_DIRECTORIES ${VTK_LIBRARY_DIRS}
   INCLUDE_DIRECTORIES ${QT_INCLUDE_DIR} ${FiberViewerLight_BINARY_DIR} ${FiberViewerLight_SOURCE_DIR} ${QWT_INCLUDE_DIR} ${VTK_INCLUDE_DIRS}
+  ${INSTALL_RULES}
   )
 
 if( EXTENSION )
