@@ -120,7 +120,11 @@ vtkSmartPointer<vtkPolyData> FVCutterGUI::BuildNewPolyData()
 	ModifiedPolyData->SetLines(NewLines);
 	vtkSmartPointer<vtkPolyDataWriter> fiberwriter = vtkPolyDataWriter::New();
 	fiberwriter->SetFileName("./Test.vtk");
+  #if (VTK_MAJOR_VERSION < 6)
 	fiberwriter->SetInput(ModifiedPolyData);
+  #else
+	fiberwriter->SetInputData(ModifiedPolyData);
+  #endif
 	fiberwriter->Update();
 	if(UseTensor)
 		ModifiedPolyData->GetPointData()->SetTensors(NewTensors);
@@ -144,7 +148,11 @@ void FVCutterGUI::OkAction()
 	m_Display->SetOriginalPolyData(BuildNewPolyData());
 	vtkSmartPointer<vtkPolyDataWriter> fiberwriter = vtkPolyDataWriter::New();
 	fiberwriter->SetFileName("./Test2.vtk");
+  #if (VTK_MAJOR_VERSION < 6)
 	fiberwriter->SetInput(m_Display->GetOriginalPolyData());
+  #else
+	fiberwriter->SetInputData(m_Display->GetOriginalPolyData());
+  #endif
 	fiberwriter->Update();
 	emit Exit(FVPanelGUI::Ok);
 }

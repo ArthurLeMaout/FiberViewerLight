@@ -401,7 +401,11 @@ void FiberDisplay::StartRenderer(vtkSmartPointer<vtkPolyData> PolyData)
 		
 		//Set mapper's input
 		vtkSmartPointer<vtkPolyDataMapper> PolyDataMapper=vtkSmartPointer<vtkPolyDataMapper>::New();
+    #if (VTK_MAJOR_VERSION < 6)
 		PolyDataMapper->SetInput(m_DisplayedPolyData);
+    #else
+		PolyDataMapper->SetInputData(m_DisplayedPolyData);
+    #endif
 		
 		//Set actor's mapper
 		vtkSmartPointer<vtkActor> PolyDataActor=vtkSmartPointer<vtkActor>::New();

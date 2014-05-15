@@ -3,8 +3,6 @@
 set(verbose FALSE)
 #-----------------------------------------------------------------------------
 
-set( ${LOCAL_PROJECT_NAME}_USE_QT ON )
-
 #-----------------------------------------------------------------------------
 # Enable and setup External project global properties
 #-----------------------------------------------------------------------------
@@ -31,7 +29,7 @@ else()
   set(cmakeversion_external_update_value 1)
 endif()
 
-set( ${LOCAL_PROJECT_NAME}_DEPENDENCIES QWT )
+set( ${PRIMARY_PROJECT_NAME}_DEPENDENCIES QWT )
 
 if( FiberViewerLight_BUILD_SLICER_EXTENSION )
   set( USE_SYSTEM_QWT OFF CACHE BOOL "Use system QWT" FORCE )
@@ -51,13 +49,15 @@ if( FiberViewerLight_BUILD_SLICER_EXTENSION )
   set( SUPERBUILD_NOT_EXTENSION FALSE )
 else()
   set( SUPERBUILD_NOT_EXTENSION TRUE )
-  list(APPEND ${LOCAL_PROJECT_NAME}_DEPENDENCIES ITKv4 SlicerExecutionModel VTK )
+  list(APPEND ${PRIMARY_PROJECT_NAME}_DEPENDENCIES ITKv4 SlicerExecutionModel VTK )
 endif()
 set( BUILD_SHARED_LIBS OFF)
 #-----------------------------------------------------------------------------
 # Project dependencies
 #-----------------------------------------------------------------------------
 
+set(EXTERNAL_SOURCE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} CACHE PATH "Select where external packages will be downloaded" )
+set(EXTERNAL_BINARY_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} CACHE PATH "Select where external packages will be compiled and installed" )
 
 #-----------------------------------------------------------------------------
 # Superbuild option(s)
@@ -84,12 +84,12 @@ option(USE_SYSTEM_VTK "Build using an externally defined version of VTK" OFF)
 option(USE_SYSTEM_QWT "Build using an externally defined version of QWT" OFF)
 
 #------------------------------------------------------------------------------
-# ${LOCAL_PROJECT_NAME} dependency list
+# ${PRIMARY_PROJECT_NAME} dependency list
 #------------------------------------------------------------------------------
 
 
 if(BUILD_STYLE_UTILS)
-  list(APPEND ${LOCAL_PROJECT_NAME}_DEPENDENCIES Cppcheck KWStyle Uncrustify)
+  list(APPEND ${PRIMARY_PROJECT_NAME}_DEPENDENCIES Cppcheck KWStyle Uncrustify)
 endif()
 
 
@@ -101,8 +101,8 @@ endif()
 # that should passed to ${CMAKE_PROJECT_NAME}.
 # The item of this list should have the following form: <EP_VAR>:<TYPE>
 # where '<EP_VAR>' is an external project variable and TYPE is either BOOL, STRING, PATH or FILEPATH.
-# TODO Variable appended to this list will be automatically exported in ${LOCAL_PROJECT_NAME}Config.cmake,
-# prefix '${LOCAL_PROJECT_NAME}_' will be prepended if it applies.
+# TODO Variable appended to this list will be automatically exported in ${PRIMARY_PROJECT_NAME}Config.cmake,
+# prefix '${PRIMARY_PROJECT_NAME}_' will be prepended if it applies.
 set(${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS)
 
 # The macro '_expand_external_project_vars' can be used to expand the list of <EP_VAR>.
@@ -166,9 +166,9 @@ list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
   USE_GIT_PROTOCOL:BOOL
   )
 
-if(${LOCAL_PROJECT_NAME}_USE_QT)
+if(${PRIMARY_PROJECT_NAME}_USE_QT)
   list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
-    ${LOCAL_PROJECT_NAME}_USE_QT:BOOL
+    ${PRIMARY_PROJECT_NAME}_USE_QT:BOOL
     QT_QMAKE_EXECUTABLE:PATH
     QT_MOC_EXECUTABLE:PATH
     QT_UIC_EXECUTABLE:PATH
@@ -177,9 +177,9 @@ endif()
 
 _expand_external_project_vars()
 set(COMMON_EXTERNAL_PROJECT_ARGS ${${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_ARGS})
-set(extProjName ${LOCAL_PROJECT_NAME})
-set(proj        ${LOCAL_PROJECT_NAME})
-SlicerMacroCheckExternalProjectDependency(${LOCAL_PROJECT_NAME})
+set(extProjName ${PRIMARY_PROJECT_NAME})
+set(proj        ${PRIMARY_PROJECT_NAME})
+SlicerMacroCheckExternalProjectDependency(${PRIMARY_PROJECT_NAME})
 
 #-----------------------------------------------------------------------------
 # Set CMake OSX variable to pass down the external project
@@ -257,19 +257,19 @@ else()
   set( CLI_INSTALL_ARCHIVE_DESTINATION lib )
 endif()
 
-  set(proj ${LOCAL_PROJECT_NAME})
+  set(proj ${PRIMARY_PROJECT_NAME})
   ExternalProject_Add(${proj}
     DOWNLOAD_COMMAND ""
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
     BINARY_DIR ${proj}-build
-    DEPENDS ${${LOCAL_PROJECT_NAME}_DEPENDENCIES}
+    DEPENDS ${${PRIMARY_PROJECT_NAME}_DEPENDENCIES}
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
       -DCLI_INSTALL_DIRECTORY:PATH=${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}
       -DSlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION:PATH=${CLI_INSTALL_RUNTIME_DESTINATION}
       -DSlicerExecutionModel_DEFAULT_CLI_INSTALL_LIBRARY_DESTINATION:PATH=${CLI_INSTALL_LIBRARY_DESTINATION}
       -DSlicerExecutionModel_DEFAULT_CLI_INSTALL_ARCHIVE_DESTINATION:PATH=${CLI_INSTALL_ARCHIVE_DESTINATION}
-      -D${LOCAL_PROJECT_NAME}_SUPERBUILD:BOOL=OFF
+      -D${PRIMARY_PROJECT_NAME}_SUPERBUILD:BOOL=OFF
       ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
       ${COMMON_EXTERNAL_PROJECT_ARGS}
       -DEXTENSION_SUPERBUILD_BINARY_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}

@@ -593,7 +593,11 @@ void FiberViewerLightGUI::SaveVTK()
 			vtkSmartPointer<vtkPolyDataWriter> fiberwriter = vtkPolyDataWriter::New();
 			fiberwriter->SetFileTypeToBinary();
 			fiberwriter->SetFileName(file.toStdString().c_str());
+      #if (VTK_MAJOR_VERSION < 6)
 			fiberwriter->SetInput(FinalPolyData);
+      #else
+			fiberwriter->SetInputData(FinalPolyData);
+      #endif
 			fiberwriter->Update();
 		}
     // XML
@@ -601,7 +605,11 @@ void FiberViewerLightGUI::SaveVTK()
 		{
 			vtkSmartPointer<vtkXMLPolyDataWriter> fiberwriter = vtkXMLPolyDataWriter::New();
 			fiberwriter->SetFileName(file.toStdString().c_str());
+      #if (VTK_MAJOR_VERSION < 6)
 			fiberwriter->SetInput(FinalPolyData);
+      #else
+			fiberwriter->SetInputData(FinalPolyData);
+      #endif
 			fiberwriter->Update();
 		}
 	}

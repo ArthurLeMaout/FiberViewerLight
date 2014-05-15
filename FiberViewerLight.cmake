@@ -93,10 +93,11 @@ QT4_WRAP_CPP(MOC_FILES FiberViewerLightGUI.h FVLengthGUI.h FVDistributionGUI.h F
 SET(FVLight_source FiberViewerLight.cxx FiberViewerLightGUI.cxx FiberDisplay.cxx FVLengthGUI.cxx  FVDistributionGUI.cxx FVPanelGUI.cxx FVDisplayClassGUI.cxx FVNormalizedCutGUI.cxx PlanSetting.cxx FVCutterGUI.cxx ${MOC_FILES})
 SET(FVLight_header FiberViewerLightGUI.h FiberDisplay.h FVLengthGUI.h FVDistributionGUI.h FVPanelGUI.h FVDisplayClassGUI.h FVNormalizedCutGUI.h PlanSetting.h FVCutterGUI.h)
 
-set(VTK_LIBRARIES 
-  ${VTK_LIBRARIES}
-  QVTK
-)
+if( VTK_MAJOR_VERSION VERSION_LESS 6 )
+  list(APPEND VTK_LIBRARIES 
+       QVTK
+      )
+endif()
 
 set( FVL_LIBRARIES 
   ${ITK_LIBRARIES}
