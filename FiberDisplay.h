@@ -22,6 +22,7 @@
 #include <vtkPolyDataWriter.h>
 #include <vtkInteractorStyleSwitch.h>
 #include <vtkImplicitPlaneWidget.h>
+#include <vtkVersion.h>
 
 #include <itkImage.h>
 #include <itkContinuousIndex.h>

@@ -34,6 +34,7 @@
 #include <vtkProperty.h>
 #include <vtkPolyLine.h>
 #include <vtkLookupTable.h>
+#include <vtkVersion.h>
 
 #include "FiberDisplay.h"
 #include "FVLengthGUI.h"

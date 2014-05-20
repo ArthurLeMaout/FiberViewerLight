@@ -25,6 +25,7 @@
 #include "vtkPoints.h"
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
+#include <vtkVersion.h>
 
 #include "FVPanelGUI.h"
 
