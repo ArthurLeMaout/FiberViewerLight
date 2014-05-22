@@ -34,6 +34,8 @@ set( ${PRIMARY_PROJECT_NAME}_DEPENDENCIES QWT )
 if( FiberViewerLight_BUILD_SLICER_EXTENSION )
   set( USE_SYSTEM_QWT OFF CACHE BOOL "Use system QWT" FORCE )
   set( USE_SYSTEM_VTK ON CACHE BOOL "Use system VTK" FORCE )
+  #VTK_VERSION_MAJOR is define but not a CACHE variable
+  set( VTK_VERSION_MAJOR ${VTK_VERSION_MAJOR} CACHE STRING "Choose the expected VTK major version to build Slicer (5 or 6).")
   set( USE_SYSTEM_ITK ON CACHE BOOL "Use system ITK" FORCE)
   set( USE_SYSTEM_SlicerExecutionModel ON CACHE BOOL "Use system SliceExecutionModel" FORCE)
   unsetForSlicer( NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS QT_QMAKE_EXECUTABLE )
