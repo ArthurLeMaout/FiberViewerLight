@@ -45,7 +45,7 @@ set(EXTENSION_HOMEPAGE "http://www.nitrc.org/projects/fvlight/")
 set(EXTENSION_CATEGORY "Diffusion")
 set(EXTENSION_CONTRIBUTORS "Francois Budin (UNC)")
 set(EXTENSION_DESCRIPTION "FiberViewerLight is an open-source software to visualize and edit fibers")
-set(EXTENSION_ICONURL "http://www.nitrc.org/project/screenshot.php?group_id=534&screenshot_id=598")
+set(EXTENSION_ICONURL "https://www.nitrc.org/project/screenshot.php?group_id=534&screenshot_id=766")
 set(EXTENSION_SCREENSHOTURLS "http://www.nitrc.org/project/list_screenshots.php?group_id=534&screenshot_id=599 http://www.nitrc.org/project/list_screenshots.php?group_id=534&screenshot_id=597")
 set(EXTENSION_STATUS "Beta")
 set(EXTENSION_DEPENDS "NA") # Specified as a space separated list or 'NA' if any
