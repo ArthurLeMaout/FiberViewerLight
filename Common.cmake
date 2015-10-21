@@ -23,6 +23,10 @@ else(NOT USE_GIT_PROTOCOL)
 endif()
 
 #-----------------------------------------------------------------------------
+if(WIN32)
+  set(fileextension .exe)
+endif()
+#-----------------------------------------------------------------------------
 # Platform check
 #-----------------------------------------------------------------------------
 
@@ -47,9 +51,9 @@ set(EXTENSION_CONTRIBUTORS "Francois Budin (UNC)")
 set(EXTENSION_DESCRIPTION "FiberViewerLight is an open-source software to visualize and edit fibers")
 set(EXTENSION_ICONURL "http://www.nitrc.org/project/screenshot.php?group_id=534&screenshot_id=767")
 set(EXTENSION_SCREENSHOTURLS "http://wiki.slicer.org/slicerWiki/images/thumb/b/b9/FiberViewerLight1.2-ScreenShot.png/670px-FiberViewerLight1.2-ScreenShot.png")
-set(EXTENSION_STATUS "Beta")
+set(EXTENSION_STATUS "")
 set(EXTENSION_DEPENDS "NA") # Specified as a space separated list or 'NA' if any
-set(EXTENSION_BUILD_SUBDIRECTORY FiberViewerLight-build)
+set(EXTENSION_BUILD_SUBDIRECTORY .)
 
 option( BUILD_TESTING   "Build the testing tree" ON )
 

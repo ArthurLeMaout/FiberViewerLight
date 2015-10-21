@@ -1,23 +1,8 @@
-#-----------------------------------------------------------------------------
-###Unset those variables which may have been set by the first pass of CMake configuration
-###with SuperBuild set to ON
-unset( USE_SYSTEM_ITK CACHE )
-unset( USE_SYSTEM_VTK CACHE )
-unset( USE_SYSTEM_SlicerExecutionModel CACHE )
-unset( USE_SYSTEM_QWT CACHE )
-unset( VTK_GIT_TAG CACHE )
-unset( VTK_REPOSITORY CACHE )
-#-----------------------------------------------------------------------------
-set(MODULE_NAME ${EXTENSION_NAME}) # Do not use 'project()'
-set(MODULE_TITLE ${MODULE_NAME})
 
-string(TOUPPER ${MODULE_NAME} MODULE_NAME_UPPER)
+SETIFEMPTY( RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin )
+SETIFEMPTY( LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
+SETIFEMPTY( ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/static)
 
-if( NOT RUNTIME_OUTPUT_DIRECTORY )
-  set( RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )
-  set( LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
-  set( ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/static)
-endif()
 
 FIND_PACKAGE(VTK REQUIRED)
 IF (VTK_FOUND)
@@ -55,7 +40,7 @@ endif()
 
 # Qwt libraries
 if( NOT QWT_LIBRARY OR QWT_LIBRARY_PATH )
-  if( EXTENSION OR SUPERBUILD_NOT_EXTENSION )
+  if( BUILD_WITH_SUPERBUILD )
     set(NO_ENV_PATH "NO_DEFAULT_PATH")
   endif()
   SET(QWT_NAMES ${QWT_NAMES} qwt libqwt)
@@ -70,23 +55,20 @@ if(NOT QWT_LIBRARY)
 endif()
 set(QWT_LIBRARIES ${QWT_LIBRARY})
 
+SETIFEMPTY(INSTALL_RUNTIME_DESTINATION bin)
+SETIFEMPTY(INSTALL_LIBRARY_DESTINATION lib)
+SETIFEMPTY(INSTALL_ARCHIVE_DESTINATION lib)
 
 if( EXTENSION )
   if( APPLE )
     set( CMAKE_EXE_LINKER_FLAGS -Wl,-rpath,@loader_path/../../../../../)
   endif()
-  if( WIN32 OR APPLE )
-    include(${GenerateCLP_USE_FILE})
-    generateclp(Launcher_CLP FiberViewerLight.xml )
-    add_executable( FiberViewerLightLauncher Launcher.cxx ${Launcher_CLP} )
-  endif()
-else()
-  set( INSTALL_RULES
-       INSTALL_RUNTIME_DESTINATION bin
-       INSTALL_LIBRARY_DESTINATION lib
-       INSTALL_ARCHIVE_DESTINATION lib
-     )
+  include(${GenerateCLP_USE_FILE})
+  generateclp(Launcher_CLP FiberViewerLight.xml )
+  add_executable( FiberViewerLightLauncher Launcher.cxx ${Launcher_CLP} )
+  install( TARGETS FiberViewerLightLauncher RUNTIME DESTINATION ${INSTALL_RUNTIME_DESTINATION} )
 endif()
+
 
 QT4_WRAP_CPP(MOC_FILES FiberViewerLightGUI.h FVLengthGUI.h FVDistributionGUI.h FVPanelGUI.h FVDisplayClassGUI.h FVCutterGUI.h FVNormalizedCutGUI.h PlanSetting.h FiberDisplay.h)
 
@@ -116,23 +98,13 @@ SEMMacroBuildCLI(
   TARGET_LIBRARIES ${FVL_LIBRARIES}
   LINK_DIRECTORIES ${VTK_LIBRARY_DIRS}
   INCLUDE_DIRECTORIES ${QT_INCLUDE_DIR} ${FiberViewerLight_BINARY_DIR} ${FiberViewerLight_SOURCE_DIR} ${QWT_INCLUDE_DIR} ${VTK_INCLUDE_DIRS}
-  ${INSTALL_RULES}
+  INSTALL_RUNTIME_DESTINATION ${INSTALL_RUNTIME_DESTINATION}
+  INSTALL_LIBRARY_DESTINATION ${INSTALL_LIBRARY_DESTINATION}
+  INSTALL_ARCHIVE_DESTINATION ${INSTALL_ARCHIVE_DESTINATION}
   )
-
-if( EXTENSION )
-  find_package(Slicer REQUIRED)
-  include(${Slicer_USE_FILE})
-endif()
 
 IF(BUILD_TESTING)
   include( CTest )
   ADD_SUBDIRECTORY(Testing)
 ENDIF(BUILD_TESTING)
 
-if( EXTENSION )
-  if( WIN32 OR APPLE )
-    install(TARGETS FiberViewerLightLauncher DESTINATION ${CLI_INSTALL_DIRECTORY})
-  endif()
-  set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
-  include(${Slicer_EXTENSION_CPACK})
-endif()

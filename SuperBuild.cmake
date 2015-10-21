@@ -40,17 +40,11 @@ if( FiberViewerLight_BUILD_SLICER_EXTENSION )
   set( USE_SYSTEM_SlicerExecutionModel ON CACHE BOOL "Use system SliceExecutionModel" FORCE)
   unsetForSlicer( NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS QT_QMAKE_EXECUTABLE )
   find_package(Slicer REQUIRED)
-  #When the following line is commented out, EXTENSION_SUPERBUILD_BINARY_DIR is not defined anymore.
-  #Instead, we define the variable EXTENSION to let the inner build directory know that we are 
-  #building FiberViewerLight as an extension
-  #We also remove 'EXTENSION_SUPERBUILD_BINARY_DIR:PATH' from 'list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS'
-  #include(${Slicer_USE_FILE})
   set(EXTENSION TRUE)
   unsetAllForSlicerBut( NAMES VTK_DIR ITK_DIR SlicerExecutionModel_DIR QT_QMAKE_EXECUTABLE CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS )
   resetForSlicer( NAMES CMAKE_MODULE_PATH )
-  set( SUPERBUILD_NOT_EXTENSION FALSE )
 else()
-  set( SUPERBUILD_NOT_EXTENSION TRUE )
+  set(EXTENSION FALSE)
   list(APPEND ${PRIMARY_PROJECT_NAME}_DEPENDENCIES ITKv4 SlicerExecutionModel VTK )
 endif()
 set( BUILD_SHARED_LIBS OFF)
@@ -150,7 +144,6 @@ list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
   CMAKE_MODULE_LINKER_FLAGS:STRING
   CMAKE_GENERATOR:STRING
   CMAKE_EXTRA_GENERATOR:STRING
-  CMAKE_INSTALL_PREFIX:PATH
   CMAKE_LIBRARY_OUTPUT_DIRECTORY:PATH
   CMAKE_ARCHIVE_OUTPUT_DIRECTORY:PATH
   CMAKE_RUNTIME_OUTPUT_DIRECTORY:PATH
@@ -209,13 +202,8 @@ list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
   SlicerExecutionModel_DIR:PATH
   CMAKE_MODULE_PATH:PATH
   EXTENSION:BOOL
-  SUPERBUILD_NOT_EXTENSION:BOOL
-  EXTENSION_NAME:STRING
-  Slicer_DIR:PATH
   QWT_LIBRARY_PATH:FILEPATH
   QWT_INCLUDE_DIR:PATH
-  MIDAS_PACKAGE_EMAIL:STRING
-  MIDAS_PACKAGE_API_KEY:STRING
   )
 
 _expand_external_project_vars()
@@ -243,43 +231,23 @@ endif()
 # Configure and build
 #------------------------------------------------------------------------------
 
-if( FiberViewerLight_BUILD_SLICER_EXTENSION )
-  if( WIN32 OR APPLE )
-    set( CLI_INSTALL_LIBRARY_DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_LIBRARY_DESTINATION}/../hidden-cli-modules )
-    set( CLI_INSTALL_RUNTIME_DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/../hidden-cli-modules )
-    set( CLI_INSTALL_ARCHIVE_DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/../lib )
-  else()
-    set( CLI_INSTALL_LIBRARY_DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_LIBRARY_DESTINATION} )
-    set( CLI_INSTALL_RUNTIME_DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION} )
-    set( CLI_INSTALL_ARCHIVE_DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_ARCHIVE_DESTINATION} )
-  endif()
-else()
-  set( CLI_INSTALL_RUNTIME_DESTINATION bin )
-  set( CLI_INSTALL_LIBRARY_DESTINATION lib )
-  set( CLI_INSTALL_ARCHIVE_DESTINATION lib )
-endif()
-
   set(proj ${PRIMARY_PROJECT_NAME})
-  ExternalProject_Add(${proj}
+  ExternalProject_Add(${proj}-inner
     DOWNLOAD_COMMAND ""
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
     BINARY_DIR ${proj}-build
     DEPENDS ${${PRIMARY_PROJECT_NAME}_DEPENDENCIES}
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
-      -DCLI_INSTALL_DIRECTORY:PATH=${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}
-      -DSlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION:PATH=${CLI_INSTALL_RUNTIME_DESTINATION}
-      -DSlicerExecutionModel_DEFAULT_CLI_INSTALL_LIBRARY_DESTINATION:PATH=${CLI_INSTALL_LIBRARY_DESTINATION}
-      -DSlicerExecutionModel_DEFAULT_CLI_INSTALL_ARCHIVE_DESTINATION:PATH=${CLI_INSTALL_ARCHIVE_DESTINATION}
       -D${PRIMARY_PROJECT_NAME}_SUPERBUILD:BOOL=OFF
+      -DBUILD_WITH_SUPERBUILD:BOOL=ON
       ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
       ${COMMON_EXTERNAL_PROJECT_ARGS}
-      -DEXTENSION_SUPERBUILD_BINARY_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}
-    INSTALL_COMMAND ""
+      -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install
   )
 
 ## Force rebuilding of the main subproject every time building from super structure
-ExternalProject_Add_Step(${proj} forcebuild
+ExternalProject_Add_Step(${proj}-inner forcebuild
     COMMAND ${CMAKE_COMMAND} -E remove
     ${CMAKE_CURRENT_BUILD_DIR}/${proj}-prefix/src/${proj}-stamp/${proj}-build
     DEPENDEES configure
@@ -288,3 +256,26 @@ ExternalProject_Add_Step(${proj} forcebuild
   )
 
 #-----------------------------------------------------------------------------
+# Extensions with Superbuild that have different libraries than the ones included in Slicer
+# must be packaged in outer-build directory (since Experimental and other targets created
+# by Slicer reconfigure the project from scratch and erase paths given from the outer-build directory
+# to the inner-build directory.
+
+if( FiberViewerLight_BUILD_SLICER_EXTENSION )
+  find_package(Slicer REQUIRED)
+  include(${Slicer_USE_FILE})
+  install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${proj}-install/bin/FiberViewerLightLauncher DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION})
+  set( NOCLI_INSTALL_DIR ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/../hidden-cli-modules)
+  install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${proj}-install/bin/FiberViewerLight DESTINATION ${NOCLI_INSTALL_DIR})
+  set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
+  include(${Slicer_EXTENSION_CPACK})
+  # For the tests, we manually import the targets built in the inner-build directory
+  foreach( VAR FiberViewerLightLauncher FiberViewerLight)
+    add_executable(${VAR} IMPORTED)
+    set_property(TARGET ${VAR} PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/${proj}-install/bin/${VAR}${fileextension})
+  endforeach()
+  IF(BUILD_TESTING)
+    include( CTest )
+    ADD_SUBDIRECTORY(Testing)
+  ENDIF(BUILD_TESTING)
+endif()
