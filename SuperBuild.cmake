@@ -264,9 +264,9 @@ ExternalProject_Add_Step(${proj}-inner forcebuild
 if( FiberViewerLight_BUILD_SLICER_EXTENSION )
   find_package(Slicer REQUIRED)
   include(${Slicer_USE_FILE})
-  install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${proj}-install/bin/FiberViewerLightLauncher DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION})
+  install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${proj}-install/bin/FiberViewerLightLauncher${fileextension} DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION})
   set( NOCLI_INSTALL_DIR ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/../hidden-cli-modules)
-  install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${proj}-install/bin/FiberViewerLight DESTINATION ${NOCLI_INSTALL_DIR})
+  install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${proj}-install/bin/FiberViewerLight${fileextension} DESTINATION ${NOCLI_INSTALL_DIR})
   set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
   include(${Slicer_EXTENSION_CPACK})
   # For the tests, we manually import the targets built in the inner-build directory
