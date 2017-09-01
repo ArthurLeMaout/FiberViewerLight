@@ -166,7 +166,7 @@ void FVDistributionGUI::ApplyHausdorffMean(std::string Method, bool Type)
 			{
 				if(Alpha[j]==1)
 				{
-					double Max, x1, x2;
+					double Max= 0, x1 = 0, x2 = 0;
 					PolyData->GetCellPoints(j,NbTargetPoints,TargetIds);
 					if(Method=="Hausdorff")
 					{
