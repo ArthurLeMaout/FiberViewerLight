@@ -19,7 +19,7 @@ class FVDisplayClassGUI: public FVPanelGUI
 	
 	public:
 		enum Sender{Distribution,NCut};
-		FVDisplayClassGUI(QWidget* Parent, FiberDisplay* Display);
+		FVDisplayClassGUI(QWidget* Parent, FiberDisplay* FVDisplay);
 		void SetModel(std::vector<int> Mark, int NbClasse);
 		std::vector<int> GetNbFibersPerClasse(int NbClasse);
 		void CompleteMark();

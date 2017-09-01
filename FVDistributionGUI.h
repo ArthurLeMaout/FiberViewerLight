@@ -35,7 +35,7 @@ class FVDistributionGUI : public FVPanelGUI
 	Q_OBJECT
 	
 	public:
-		FVDistributionGUI(QWidget* Parent, FiberDisplay* Display);
+		FVDistributionGUI(QWidget* Parent, FiberDisplay* FVDisplay);
 		void ClearHist();
 		void InitDistance(int NbFibers);
 		void SetMethod(std::string Sender, bool Type=false);

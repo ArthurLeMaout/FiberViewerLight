@@ -1,6 +1,6 @@
 #include "FVCutterGUI.h"
 
-FVCutterGUI::FVCutterGUI(QWidget* Parent, FiberDisplay* Display) : FVPanelGUI(Parent,Display)
+FVCutterGUI::FVCutterGUI(QWidget* Parent, FiberDisplay* FVDisplay) : FVPanelGUI(Parent,FVDisplay)
 {
 	m_PB_Cut=new QPushButton("Cut",this);
 	m_L_Detail=new QLabel("Remove fiber pieces on the arrowhead\nside of the plan",this);
@@ -99,7 +99,7 @@ vtkSmartPointer<vtkPolyData> FVCutterGUI::BuildNewPolyData()
 				{
 					vtkSmartPointer<vtkPolyLine> NewLine=vtkSmartPointer<vtkPolyLine>::New();
 					NewLine->GetPointIds()->SetNumberOfIds(TempFiber.size());
-					for(int k=0; k<TempFiber.size(); k++)
+					for(size_t k=0; k<TempFiber.size(); k++)
 						NewLine->GetPointIds()->SetId(k,TempFiber[k]);
 					NewLines->InsertNextCell(NewLine);
 					TempFiber.clear();
@@ -109,7 +109,7 @@ vtkSmartPointer<vtkPolyData> FVCutterGUI::BuildNewPolyData()
 			{
 				vtkSmartPointer<vtkPolyLine> NewLine=vtkSmartPointer<vtkPolyLine>::New();
 				NewLine->GetPointIds()->SetNumberOfIds(TempFiber.size());
-				for(int k=0; k<TempFiber.size(); k++)
+				for(size_t k=0; k<TempFiber.size(); k++)
 					NewLine->GetPointIds()->SetId(k,TempFiber[k]);
 				NewLines->InsertNextCell(NewLine);
 			}

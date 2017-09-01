@@ -305,7 +305,7 @@ int FiberDisplay::GetNbModifiedFibers()
 {
 	int NbModifiedFibers=0;
 	std::vector<int> Alpha=GetLastAlpha(FiberDisplay::Previous);
-	for(int i=0; i<Alpha.size(); i++)
+	for(size_t i=0; i<Alpha.size(); i++)
 	{
 		if(Alpha[i]==1)
 			NbModifiedFibers++;
@@ -346,7 +346,7 @@ void FiberDisplay::FillDisplayedId(std::vector<int> RandomIds)
 	int RandCountId=0, RandCount=0;
 	std::vector <int> Alpha=GetLastAlpha(FiberDisplay::Previous);
 	int NumberOfFibers=GetNbModifiedFibers();
-	for(int i=0; i<Alpha.size(); i++)
+	for(size_t i=0; i<Alpha.size(); i++)
 	{
 		if(Alpha[i]==0)
 			m_DisplayedId.push_back(0);
@@ -460,7 +460,7 @@ void FiberDisplay::UpdateCells()
 				{
 					vtkSmartPointer<vtkPolyLine> NewLine=vtkSmartPointer<vtkPolyLine>::New();
 					NewLine->GetPointIds()->SetNumberOfIds(TempFiber.size());
-					for(int k=0; k<TempFiber.size(); k++)
+					for(size_t k=0; k<TempFiber.size(); k++)
 						NewLine->GetPointIds()->SetId(k,TempFiber[k]);
 					NewLines->InsertNextCell(NewLine);
 					TempFiber.clear();
@@ -470,7 +470,7 @@ void FiberDisplay::UpdateCells()
 			{
 				vtkSmartPointer<vtkPolyLine> NewLine=vtkSmartPointer<vtkPolyLine>::New();
 				NewLine->GetPointIds()->SetNumberOfIds(TempFiber.size());
-				for(int k=0; k<TempFiber.size(); k++)
+				for(size_t k=0; k<TempFiber.size(); k++)
 					NewLine->GetPointIds()->SetId(k,TempFiber[k]);
 				NewLines->InsertNextCell(NewLine);
 			}
@@ -497,7 +497,7 @@ IntImageType::Pointer FiberDisplay::Voxelize(int Id)
 	Origin[2]=m_Bounds[4];
 	LabelImage->SetOrigin(Origin);
 	
-	IntImageType::RegionType Region;
+	IntImageType::RegionType region;
 	IntImageType::SizeType RegionSize;
 	RegionSize[0]=ceil(m_Bounds[1]-m_Bounds[0]+1)/m_Spacing;
 	RegionSize[1]=ceil(m_Bounds[3]-m_Bounds[2]+1)/m_Spacing;
@@ -508,9 +508,9 @@ IntImageType::Pointer FiberDisplay::Voxelize(int Id)
 	RegionIndex[1]=0;
 	RegionIndex[2]=0;
 	
-	Region.SetSize(RegionSize);
-	Region.SetIndex(RegionIndex);
-	LabelImage->SetRegions(Region);
+	region.SetSize(RegionSize);
+	region.SetIndex(RegionIndex);
+	LabelImage->SetRegions(region);
 	
 	LabelImage->Allocate();
 	LabelImage->FillBuffer(0);

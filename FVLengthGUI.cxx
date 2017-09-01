@@ -1,6 +1,6 @@
 #include "FVLengthGUI.h"
 
-FVLengthGUI::FVLengthGUI(QWidget* Parent, FiberDisplay* Display) : FVPanelGUI(Parent,Display)
+FVLengthGUI::FVLengthGUI(QWidget* Parent, FiberDisplay* FVDisplay) : FVPanelGUI(Parent,FVDisplay)
 {
 	m_HistPlot=new QwtPlot;
 	m_HistPlot->setMinimumSize(300,250);
@@ -118,10 +118,6 @@ void FVLengthGUI::LengthComputation()
 {
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 	std::cout<<"Length computation..."<<std::endl;
-	
-	//Get the actual renderer
-	vtkRenderer* Renderer=vtkRenderer::New();
-	Renderer=m_Display->GetRenderer();
 	
 	double Min=GetMinLength(), Max=GetMaxLength();
 	

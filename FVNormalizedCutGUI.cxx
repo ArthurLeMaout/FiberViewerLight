@@ -1,6 +1,6 @@
 #include "FVNormalizedCutGUI.h"
 
-FVNormCutGUI::FVNormCutGUI(QWidget* Parent, FiberDisplay* Display):FVPanelGUI(Parent,Display)
+FVNormCutGUI::FVNormCutGUI(QWidget* Parent, FiberDisplay* FVDisplay):FVPanelGUI(Parent,FVDisplay)
 {
 	m_L_Cluster=new QLabel("Number of Cluster", this);
 	m_SB_Cluster=new QSpinBox(this);
@@ -47,8 +47,6 @@ void FVNormCutGUI::ApplyWeight(bool Type)
 	vtkIdType NbSourcePoints, NbTargetPoints;
 	vtkIdType* SourceIds;
 	vtkIdType* TargetIds;
-	vtkCellArray* LinesSource=PolyData->GetLines();
-	vtkCellArray* LinesTarget=PolyData->GetLines();
 	int NbFibers=PolyData->GetNumberOfCells();
 	int CountProgress=0;
 	int RelevantSourceFiberCount=0, RelevantTargetFiberCount=0;
@@ -108,7 +106,7 @@ double FVNormCutGUI::ComputeMeanDistance(int NbSourcePoints,vtkIdType* SourceIds
 	vtkSmartPointer<vtkPolyData> PolyData;
 	PolyData=m_Display->GetOriginalPolyData();
 	vtkPoints* Points=PolyData->GetPoints();
-	for (unsigned int i=0;i<NbSourcePoints;i++)
+	for (int i=0;i<NbSourcePoints;i++)
 	{
 		double SourcePoint[3]={0,0,0};
 		Points->GetPoint(SourceIds[i],SourcePoint);
@@ -118,7 +116,7 @@ double FVNormCutGUI::ComputeMeanDistance(int NbSourcePoints,vtkIdType* SourceIds
 		ys=SourcePoint[1];
 		zs=SourcePoint[2];
 		
-		for (unsigned int j=0;j<NbTargetPoints;j++)
+		for (int j=0;j<NbTargetPoints;j++)
 		{
 			//calculate distance between the two points
 			double TargetPoint[3]={0,0,0};
@@ -155,7 +153,7 @@ double FVNormCutGUI::ComputeMeanDistance(int SourceId,int NbTargetPoints,vtkIdTy
 	vtkPoints* Points=PolyData->GetPoints();
 	RealImageType::Pointer DistanceMap=m_Display->GetDTVector(SourceId);
 		
-	for (unsigned int j=0;j<NbTargetPoints;j++)
+	for (int j=0;j<NbTargetPoints;j++)
 	{
 		double TargetPoint[3]={0,0,0};
 		Points->GetPoint(TargetIds[j],TargetPoint);

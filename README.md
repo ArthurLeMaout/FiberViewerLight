@@ -1,6 +1,6 @@
-#FiberViewerLight
+# FiberViewerLight
 
-##What is it?
+## What is it?
 
 Fiber ViewerLight is an open-source C++ application to analyze fiber bundles. It provides:
 - Several methods for clustering: Length, Gravity, Hausdorff, and Mean methods but also a Normalized Cut algorithm.
@@ -9,11 +9,11 @@ Fiber ViewerLight is an open-source C++ application to analyze fiber bundles. It
 
 FiberViewerLight is now available as a [3D Slicer](http://www.slicer.org) extension.
 
-##License
+## License
 
 See License.txt
 
-##More information
+## More information
 
 Find the tool on [NITRC](http://www.nitrc.org/projects/fvlight)
 

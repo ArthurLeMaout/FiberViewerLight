@@ -1,8 +1,8 @@
 #include "PlanSetting.h"
 
-PlanSetting::PlanSetting(QWidget* Parent, FiberDisplay* Display) : QWidget(Parent)
+PlanSetting::PlanSetting(QWidget* Parent, FiberDisplay* FVDisplay) : QWidget(Parent)
 {
-	m_Display=Display;
+	m_Display=FVDisplay;
 	m_PB_UpdatePlan=new QPushButton("Update 3D", this);
 	m_PB_UpdatePlan->setGeometry(23,70,127,20);
 	m_PB_GetParam=new QPushButton("Get 3D", this);
