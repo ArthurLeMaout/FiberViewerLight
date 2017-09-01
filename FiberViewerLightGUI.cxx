@@ -1056,4 +1056,5 @@ bool FiberViewerLightGUI::ProcessWithoutGUI(std::string Input, std::string Outpu
 		else
 			std::cout<<ProcessList[i]<<" is not an existing method."<<std::endl;
 	}
+  return true;
 }
