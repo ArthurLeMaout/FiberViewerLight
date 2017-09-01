@@ -119,10 +119,6 @@ void FVLengthGUI::LengthComputation()
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 	std::cout<<"Length computation..."<<std::endl;
 	
-	//Get the actual renderer
-	vtkRenderer* Renderer=vtkRenderer::New();
-	Renderer=m_Display->GetRenderer();
-	
 	double Min=GetMinLength(), Max=GetMaxLength();
 	
 	m_Display->SetLookupTable(m_ColorMap);
