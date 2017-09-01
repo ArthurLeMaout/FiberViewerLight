@@ -1,6 +1,6 @@
 #include "FVLengthGUI.h"
 
-FVLengthGUI::FVLengthGUI(QWidget* Parent, FiberDisplay* Display) : FVPanelGUI(Parent,Display)
+FVLengthGUI::FVLengthGUI(QWidget* Parent, FiberDisplay* FVDisplay) : FVPanelGUI(Parent,FVDisplay)
 {
 	m_HistPlot=new QwtPlot;
 	m_HistPlot->setMinimumSize(300,250);

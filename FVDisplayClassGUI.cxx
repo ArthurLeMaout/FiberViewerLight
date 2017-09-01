@@ -1,6 +1,6 @@
 #include "FVDisplayClassGUI.h"
 
-FVDisplayClassGUI::FVDisplayClassGUI(QWidget* Parent, FiberDisplay* Display):FVPanelGUI(Parent,Display)
+FVDisplayClassGUI::FVDisplayClassGUI(QWidget* Parent, FiberDisplay* FVDisplay):FVPanelGUI(Parent,FVDisplay)
 {
 	m_TV_View=new QTableView;
 	m_PB_Show=new QPushButton("Show", this);

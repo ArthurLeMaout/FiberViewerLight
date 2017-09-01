@@ -1,6 +1,6 @@
 #include "FVNormalizedCutGUI.h"
 
-FVNormCutGUI::FVNormCutGUI(QWidget* Parent, FiberDisplay* Display):FVPanelGUI(Parent,Display)
+FVNormCutGUI::FVNormCutGUI(QWidget* Parent, FiberDisplay* FVDisplay):FVPanelGUI(Parent,FVDisplay)
 {
 	m_L_Cluster=new QLabel("Number of Cluster", this);
 	m_SB_Cluster=new QSpinBox(this);

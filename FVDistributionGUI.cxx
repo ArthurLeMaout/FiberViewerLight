@@ -1,6 +1,6 @@
 #include "FVDistributionGUI.h"
 
-FVDistributionGUI::FVDistributionGUI(QWidget* Parent, FiberDisplay* Display) : FVPanelGUI(Parent,Display)
+FVDistributionGUI::FVDistributionGUI(QWidget* Parent, FiberDisplay* FVDisplay) : FVPanelGUI(Parent,FVDisplay)
 {
 	m_HistPlot=new QwtPlot;
 	m_HistPlot->setMinimumSize(300,300);

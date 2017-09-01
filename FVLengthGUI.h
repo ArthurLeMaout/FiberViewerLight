@@ -32,7 +32,7 @@ class FVLengthGUI : public FVPanelGUI
 	Q_OBJECT
 	
 	public:
-		FVLengthGUI(QWidget* Parent, FiberDisplay* Display);
+		FVLengthGUI(QWidget* Parent, FiberDisplay* FVDisplay);
 		void LengthCalculation();
 		double GetMaxLength();
 		double GetMinLength();

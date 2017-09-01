@@ -15,7 +15,7 @@ class PlanSetting: public QWidget
 	Q_OBJECT
 	
 	public:
-		PlanSetting(QWidget* Parent, FiberDisplay* Display);
+		PlanSetting(QWidget* Parent, FiberDisplay* FVDisplay);
 		
 	public slots:
 		void UpdatePlan();

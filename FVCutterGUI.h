@@ -34,7 +34,7 @@ class FVCutterGUI : public FVPanelGUI
 	Q_OBJECT
 	
 	public:
-		FVCutterGUI(QWidget* Parent, FiberDisplay* Display);
+		FVCutterGUI(QWidget* Parent, FiberDisplay* FVDisplay);
 		vtkSmartPointer<vtkPolyData> BuildNewPolyData();
 		
 	protected slots:

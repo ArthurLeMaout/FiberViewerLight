@@ -11,7 +11,7 @@ class FVPanelGUI: public QWidget
 	
 	public:
 		enum ExitSignal{Undo,Ok};
-		FVPanelGUI(QWidget* Parent, FiberDisplay* Display);
+		FVPanelGUI(QWidget* Parent, FiberDisplay* FVDisplay);
 		
 	signals:
 		void Exit(FVPanelGUI::ExitSignal Type);

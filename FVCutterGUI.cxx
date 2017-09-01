@@ -1,6 +1,6 @@
 #include "FVCutterGUI.h"
 
-FVCutterGUI::FVCutterGUI(QWidget* Parent, FiberDisplay* Display) : FVPanelGUI(Parent,Display)
+FVCutterGUI::FVCutterGUI(QWidget* Parent, FiberDisplay* FVDisplay) : FVPanelGUI(Parent,FVDisplay)
 {
 	m_PB_Cut=new QPushButton("Cut",this);
 	m_L_Detail=new QLabel("Remove fiber pieces on the arrowhead\nside of the plan",this);
