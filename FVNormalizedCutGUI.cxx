@@ -47,8 +47,6 @@ void FVNormCutGUI::ApplyWeight(bool Type)
 	vtkIdType NbSourcePoints, NbTargetPoints;
 	vtkIdType* SourceIds;
 	vtkIdType* TargetIds;
-	vtkCellArray* LinesSource=PolyData->GetLines();
-	vtkCellArray* LinesTarget=PolyData->GetLines();
 	int NbFibers=PolyData->GetNumberOfCells();
 	int CountProgress=0;
 	int RelevantSourceFiberCount=0, RelevantTargetFiberCount=0;
