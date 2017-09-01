@@ -108,7 +108,7 @@ double FVNormCutGUI::ComputeMeanDistance(int NbSourcePoints,vtkIdType* SourceIds
 	vtkSmartPointer<vtkPolyData> PolyData;
 	PolyData=m_Display->GetOriginalPolyData();
 	vtkPoints* Points=PolyData->GetPoints();
-	for (unsigned int i=0;i<NbSourcePoints;i++)
+	for (int i=0;i<NbSourcePoints;i++)
 	{
 		double SourcePoint[3]={0,0,0};
 		Points->GetPoint(SourceIds[i],SourcePoint);
@@ -118,7 +118,7 @@ double FVNormCutGUI::ComputeMeanDistance(int NbSourcePoints,vtkIdType* SourceIds
 		ys=SourcePoint[1];
 		zs=SourcePoint[2];
 		
-		for (unsigned int j=0;j<NbTargetPoints;j++)
+		for (int j=0;j<NbTargetPoints;j++)
 		{
 			//calculate distance between the two points
 			double TargetPoint[3]={0,0,0};
@@ -155,7 +155,7 @@ double FVNormCutGUI::ComputeMeanDistance(int SourceId,int NbTargetPoints,vtkIdTy
 	vtkPoints* Points=PolyData->GetPoints();
 	RealImageType::Pointer DistanceMap=m_Display->GetDTVector(SourceId);
 		
-	for (unsigned int j=0;j<NbTargetPoints;j++)
+	for (int j=0;j<NbTargetPoints;j++)
 	{
 		double TargetPoint[3]={0,0,0};
 		Points->GetPoint(TargetIds[j],TargetPoint);

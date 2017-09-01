@@ -208,9 +208,9 @@ void FVDistributionGUI::ApplyHausdorffMean(std::string Method, bool Type)
 			RelevantSourceFiberCount++;
 		}
 	}
-// 	for(int i=0; i<m_Distance.size(); i++)
+// 	for(size_t i=0; i<m_Distance.size(); i++)
 // 	{
-// 		for(int j=i+1; j<m_Distance.size(); j++)
+// 		for(size_t j=i+1; j<m_Distance.size(); j++)
 // 			std::cout<<m_Distance[i][j]<<" ";
 // 		std::cout<<std::endl;
 // 	}
@@ -259,13 +259,13 @@ void FVDistributionGUI::GenerateClasse(std::vector<std::vector<double> > Distanc
 			int currentClass = m_Mark[Bond[i][0]];
 			m_Mark.push_back(currentClass);
 			
-			for(int j=1; j<Bond[i].size(); j++)
+			for(size_t j=1; j<Bond[i].size(); j++)
 			{
 				int queryClass = m_Mark[Bond[i][j]];
 				if (queryClass != currentClass) 
 				{
 					
-					for (int k=1; k<m_Mark.size(); k++)
+					for (size_t k=1; k<m_Mark.size(); k++)
 					{
 						if(m_Mark[k]==queryClass)
 							m_Mark[k]=currentClass;
@@ -293,9 +293,9 @@ void FVDistributionGUI::GenerateClasse(std::vector<std::vector<double> > Distanc
 double FVDistributionGUI::GetMaxDistance()
 {
 	double Max=-100000;
-	for(unsigned int i=0; i<m_Distance.size(); i++)
+	for(size_t i=0; i<m_Distance.size(); i++)
 	{
-		for(unsigned int j=i; j<m_Distance[i].size(); j++)
+		for(size_t j=i; j<m_Distance[i].size(); j++)
 		{
 			if(m_Distance[i][j]>Max)
 				Max=m_Distance[i][j];
@@ -308,7 +308,7 @@ int FVDistributionGUI::GetNumberOfClasse()
 {
 	//Get the max of the mark vector which is the number of classe
 	int nbclasse = 0;
-	for(unsigned int i = 0 ; i < m_Mark.size() ; i++)
+	for(size_t i = 0 ; i < m_Mark.size() ; i++)
 		if(m_Mark[i] > nbclasse)
 			nbclasse = m_Mark[i];
 	return nbclasse;
@@ -457,7 +457,7 @@ double FVDistributionGUI::ComputeMeanDistance(int SourceId,int NbTargetPoints,vt
 	vtkPoints* Points=PolyData->GetPoints();
 	RealImageType::Pointer DistanceMap=m_Display->GetDTVector(SourceId);
 		
-	for (unsigned int j=0;j<NbTargetPoints;j++)
+	for (int j=0;j<NbTargetPoints;j++)
 	{
 		double TargetPoint[3]={0,0,0};
 		Points->GetPoint(TargetIds[j],TargetPoint);
@@ -492,7 +492,7 @@ double FVDistributionGUI::ComputeMeanDistance(int NbSourcePoints,vtkIdType* Sour
 	vtkSmartPointer<vtkPolyData> PolyData;
 	PolyData=m_Display->GetOriginalPolyData();
 	vtkPoints* Points=PolyData->GetPoints();
-	for (unsigned int i=0;i<NbSourcePoints;i++)
+	for (int i=0;i<NbSourcePoints;i++)
 	{
 		double SourcePoint[3]={0,0,0};
 		Points->GetPoint(SourceIds[i],SourcePoint);
@@ -502,7 +502,7 @@ double FVDistributionGUI::ComputeMeanDistance(int NbSourcePoints,vtkIdType* Sour
 		ys=SourcePoint[1];
 		zs=SourcePoint[2];
 		
-		for (unsigned int j=0;j<NbTargetPoints;j++)
+		for (int j=0;j<NbTargetPoints;j++)
 		{
 			//calculate distance between the two points
 			double TargetPoint[3]={0,0,0};

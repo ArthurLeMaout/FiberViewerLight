@@ -919,9 +919,9 @@ void FiberViewerLightGUI::SaveDistanceTable(std::string Process)
 			Distance=m_DistributionGUI->GetDistanceTable();
 		
 		SaveFile<<"Process : "<<Process<<std::endl;
-		for(int i=0; i<Distance.size(); i++)
+		for(size_t i=0; i<Distance.size(); i++)
 		{
-			for(int j=0; j<Distance[i].size(); j++)
+			for(size_t j=0; j<Distance[i].size(); j++)
 				SaveFile<<Distance[i][j]<<" ";
 			SaveFile<<std::endl;
 		}
@@ -1005,7 +1005,7 @@ bool FiberViewerLightGUI::ProcessWithoutGUI(std::string Input, std::string Outpu
 		return false;
 	}
 	m_Display->SetSpacing(Spacing);
-	for(int i=0; i<ProcessList.size(); i++)
+	for(size_t i=0; i<ProcessList.size(); i++)
 	{
 		if(ProcessList[i]=="Gravity")
 		{

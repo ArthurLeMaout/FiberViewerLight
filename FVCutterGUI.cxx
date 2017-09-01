@@ -99,7 +99,7 @@ vtkSmartPointer<vtkPolyData> FVCutterGUI::BuildNewPolyData()
 				{
 					vtkSmartPointer<vtkPolyLine> NewLine=vtkSmartPointer<vtkPolyLine>::New();
 					NewLine->GetPointIds()->SetNumberOfIds(TempFiber.size());
-					for(int k=0; k<TempFiber.size(); k++)
+					for(size_t k=0; k<TempFiber.size(); k++)
 						NewLine->GetPointIds()->SetId(k,TempFiber[k]);
 					NewLines->InsertNextCell(NewLine);
 					TempFiber.clear();
@@ -109,7 +109,7 @@ vtkSmartPointer<vtkPolyData> FVCutterGUI::BuildNewPolyData()
 			{
 				vtkSmartPointer<vtkPolyLine> NewLine=vtkSmartPointer<vtkPolyLine>::New();
 				NewLine->GetPointIds()->SetNumberOfIds(TempFiber.size());
-				for(int k=0; k<TempFiber.size(); k++)
+				for(size_t k=0; k<TempFiber.size(); k++)
 					NewLine->GetPointIds()->SetId(k,TempFiber[k]);
 				NewLines->InsertNextCell(NewLine);
 			}
