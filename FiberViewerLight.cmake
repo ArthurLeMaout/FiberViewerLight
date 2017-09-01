@@ -60,12 +60,16 @@ SETIFEMPTY(INSTALL_LIBRARY_DESTINATION lib)
 SETIFEMPTY(INSTALL_ARCHIVE_DESTINATION lib)
 
 if( EXTENSION )
-  if( APPLE )
-    set( CMAKE_EXE_LINKER_FLAGS -Wl,-rpath,@loader_path/../../../../../)
-  endif()
-  include(${GenerateCLP_USE_FILE})
-  generateclp(Launcher_CLP FiberViewerLight.xml )
-  add_executable( FiberViewerLightLauncher Launcher.cxx ${Launcher_CLP} )
+  configure_file(
+    FiberViewerLight.xml
+    ${CMAKE_CURRENT_BINARY_DIR}/FiberViewerLightLauncher.xml
+    COPYONLY
+    )
+  SEMMacroBuildCLI(
+    NAME FiberViewerLightLauncher
+    EXECUTABLE_ONLY
+    NO_INSTALL
+    )
   install( TARGETS FiberViewerLightLauncher RUNTIME DESTINATION ${INSTALL_RUNTIME_DESTINATION} )
 endif()
 
