@@ -497,7 +497,7 @@ IntImageType::Pointer FiberDisplay::Voxelize(int Id)
 	Origin[2]=m_Bounds[4];
 	LabelImage->SetOrigin(Origin);
 	
-	IntImageType::RegionType Region;
+	IntImageType::RegionType region;
 	IntImageType::SizeType RegionSize;
 	RegionSize[0]=ceil(m_Bounds[1]-m_Bounds[0]+1)/m_Spacing;
 	RegionSize[1]=ceil(m_Bounds[3]-m_Bounds[2]+1)/m_Spacing;
@@ -508,9 +508,9 @@ IntImageType::Pointer FiberDisplay::Voxelize(int Id)
 	RegionIndex[1]=0;
 	RegionIndex[2]=0;
 	
-	Region.SetSize(RegionSize);
-	Region.SetIndex(RegionIndex);
-	LabelImage->SetRegions(Region);
+	region.SetSize(RegionSize);
+	region.SetIndex(RegionIndex);
+	LabelImage->SetRegions(region);
 	
 	LabelImage->Allocate();
 	LabelImage->FillBuffer(0);
