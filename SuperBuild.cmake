@@ -58,20 +58,6 @@ set(EXTERNAL_BINARY_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} CACHE PATH "Select whe
 #-----------------------------------------------------------------------------
 # Superbuild option(s)
 #-----------------------------------------------------------------------------
-option(BUILD_STYLE_UTILS "Build uncrustify, cppcheck, & KWStyle" OFF)
-CMAKE_DEPENDENT_OPTION(
-  USE_SYSTEM_Uncrustify "Use system Uncrustify program" OFF
-  "BUILD_STYLE_UTILS" OFF
-  )
-CMAKE_DEPENDENT_OPTION(
-  USE_SYSTEM_KWStyle "Use system KWStyle program" OFF
-  "BUILD_STYLE_UTILS" OFF
-  )
-CMAKE_DEPENDENT_OPTION(
-  USE_SYSTEM_Cppcheck "Use system Cppcheck program" OFF
-  "BUILD_STYLE_UTILS" OFF
-  )
-
 
 ########Since is it an extension we do not leave the choice to the user of what is compiled
 option(USE_SYSTEM_ITK "Build using an externally defined version of ITK" OFF)
@@ -82,12 +68,6 @@ option(USE_SYSTEM_QWT "Build using an externally defined version of QWT" OFF)
 #------------------------------------------------------------------------------
 # ${PRIMARY_PROJECT_NAME} dependency list
 #------------------------------------------------------------------------------
-
-
-if(BUILD_STYLE_UTILS)
-  list(APPEND ${PRIMARY_PROJECT_NAME}_DEPENDENCIES Cppcheck KWStyle Uncrustify)
-endif()
-
 
 #-----------------------------------------------------------------------------
 # Define Superbuild global variables
