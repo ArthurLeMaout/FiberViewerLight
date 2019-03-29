@@ -13,8 +13,8 @@ FVDistributionGUI::FVDistributionGUI(QWidget* Parent, FiberDisplay* FVDisplay) :
 	QwtPlotGrid* Grid=new QwtPlotGrid;
 	Grid->enableXMin(true);
 	Grid->enableYMin(true);
-	Grid->setMajPen(QPen(Qt::black,0,Qt::DotLine));
-	Grid->setMinPen(QPen(Qt::white,0,Qt::DotLine));
+	Grid->setMajorPen(QPen(Qt::black,0,Qt::DotLine));
+	Grid->setMinorPen(QPen(Qt::white,0,Qt::DotLine));
 	Grid->attach(m_HistPlot);
 	m_HistPlot->setCanvasBackground(Qt::white);
 	m_HistPlot->replot();
