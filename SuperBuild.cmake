@@ -29,7 +29,7 @@ else()
   set(cmakeversion_external_update_value 1)
 endif()
 
-set( ${PRIMARY_PROJECT_NAME}_DEPENDENCIES QWT )
+set( ${PRIMARY_PROJECT_NAME}_DEPENDENCIES QWT Qt5)
 
 if( FiberViewerLight_BUILD_SLICER_EXTENSION )
   set( USE_SYSTEM_QWT OFF CACHE BOOL "Use system QWT" FORCE )
@@ -45,7 +45,7 @@ if( FiberViewerLight_BUILD_SLICER_EXTENSION )
   resetForSlicer( NAMES CMAKE_MODULE_PATH )
 else()
   set(EXTENSION FALSE)
-  list(APPEND ${PRIMARY_PROJECT_NAME}_DEPENDENCIES ITKv4 SlicerExecutionModel VTK )
+  list(APPEND ${PRIMARY_PROJECT_NAME}_DEPENDENCIES ITKv4 SlicerExecutionModel VTK)
 endif()
 set( BUILD_SHARED_LIBS OFF)
 #-----------------------------------------------------------------------------
@@ -140,15 +140,6 @@ list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
   GIT_EXECUTABLE:FILEPATH
   USE_GIT_PROTOCOL:BOOL
   )
-
-if(${PRIMARY_PROJECT_NAME}_USE_QT)
-  list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
-    ${PRIMARY_PROJECT_NAME}_USE_QT:BOOL
-    QT_QMAKE_EXECUTABLE:PATH
-    QT_MOC_EXECUTABLE:PATH
-    QT_UIC_EXECUTABLE:PATH
-    )
-endif()
 
 _expand_external_project_vars()
 set(COMMON_EXTERNAL_PROJECT_ARGS ${${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_ARGS})
