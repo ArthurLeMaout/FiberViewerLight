@@ -86,6 +86,19 @@ set( FVL_LIBRARIES
   ${VTK_LIBRARIES}
 )
 
+FILE(READ FiberViewerLight.xml var)
+
+string(REGEX MATCH "<version>.*</version>" ext "${var}")
+string(REPLACE "<version>" "" version ${ext})
+string(REPLACE "</version>" "" version ${version})
+message(STATUS ${version})
+add_definitions(-DFVL_VERSION="${version}")
+
+# string(REPLACE "." ";" VERSION_LIST ${version})
+# list(GET VERSION_LIST 0 CPACK_PACKAGE_VERSION_MAJOR)
+# list(GET VERSION_LIST 1 CPACK_PACKAGE_VERSION_MINOR)
+# list(GET VERSION_LIST 2 CPACK_PACKAGE_VERSION_PATCH)
+
 SEMMacroBuildCLI(
   NAME FiberViewerLight
   EXECUTABLE_ONLY
