@@ -65,21 +65,7 @@ if(NOT ${ITK_VERSION_MAJOR} STREQUAL "3" AND NOT ${ITK_VERSION_MAJOR} STREQUAL "
   message(FATAL_ERROR "ITK_VERSION_MAJOR should be either 3 or 4")
 endif()
 
-set(USE_ITKv3 OFF)
 set(USE_ITKv4 ON)
-if(${ITK_VERSION_MAJOR} STREQUAL "3")
-  set(USE_ITKv3 ON)
-  set(USE_ITKv4 OFF)
-endif()
-
-set(${PRIMARY_PROJECT_NAME}_USE_QT ON)
-if(${PRIMARY_PROJECT_NAME}_USE_QT AND NOT FiberViewerLight_BUILD_SLICER_EXTENSION )
-  if(NOT QT4_FOUND)
-    find_package(Qt4 4.6 COMPONENTS QtCore QtGui QtNetwork QtXml REQUIRED)
-    include(${QT_USE_FILE})
-  endif()
-endif()
-
 
 #-----------------------------------------------------------------------------
 # Update CMake module path
