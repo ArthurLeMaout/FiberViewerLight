@@ -261,7 +261,7 @@ void FiberViewerLightGUI::InitWidgets()
 		m_GB_CutterPanel->setLayout(m_CutterGUI->layout());
 		GL_MainLayout->addWidget(m_GB_CutterPanel,0,0,Qt::AlignTop);
 		GL_MainLayout->addWidget(m_PlanSetting,1,0,Qt::AlignBottom);
-		GL_MainLayout->setRowStretch(1,1);
+		//GL_MainLayout->setRowStretch(1,1);
 		
 		GL_FiberInfo->addWidget(m_L_NbFiber,0,0,Qt::AlignLeft);
 		GL_FiberInfo->addWidget(m_L_NbFiberDisplayed,0,1,Qt::AlignLeft);
@@ -272,7 +272,7 @@ void FiberViewerLightGUI::InitWidgets()
 		GL_MainLayout->addLayout(GL_FiberInfo,2,0,2,1);
 		GL_MainLayout->addWidget(m_PB_Plane,3,1,Qt::AlignLeft);
 		GL_MainLayout->addWidget(m_Display,0,1,3,1);
-		GL_MainLayout->setColumnStretch(3,1);
+		//GL_MainLayout->setColumnStretch(3,1);
 		setLayout(GL_MainLayout);
 	}
 }
